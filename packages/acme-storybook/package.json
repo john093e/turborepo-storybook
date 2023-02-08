@@ -14,6 +14,7 @@
   "dependencies": {
     "@acme/design-system": "workspace:*",
     "@acme/pages": "workspace:*",
+    "@vercel/examples-ui": "^1.0.4",
     "react": "latest",
     "react-dom": "latest"
   },
