@@ -20,7 +20,7 @@ const Button: FC<ButtonProps & ButtonHTMLAttributes<HTMLButtonElement>> = ({
     'no-underline py-0 px-3.5 rounded-md border border-solid border-black',
     'text-base font-medium outline-none select-none align-middle',
     'whitespace-nowrap leading-10 shadow-md transition-colors',
-    secondary ? 'bg-white text-black' : 'bg-black text-white',
+    secondary ? 'bg-white text-black dark:text-white dark:bg-gray-800' : 'bg-black text-white',
     className
   )
 

@@ -11,7 +11,7 @@ export default {
 const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />
 
 export const Primary = Template.bind({})
-Primary.args = { children: 'This is a button!' }
+Primary.args = { children: 'This is a button !' }
 
 export const Secondary = Template.bind({})
-Secondary.args = { children: 'This is a button!', secondary: true }
+Secondary.args = { children: 'This is a button !', secondary: true }
