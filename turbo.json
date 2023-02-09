@@ -2,15 +2,30 @@
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**", "storybook-static/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "dist/**",
+        "storybook-static/**"
+      ]
     },
     "main#build": {
-      "dependsOn": ["^build", "$DOCS_URL"],
-      "outputs": [".next/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**"
+      ],
+      "env": [
+        "DOCS_URL"
+      ]
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "lint": {
