@@ -1,5 +1,5 @@
 {
-  "name": "@acme/pages",
+  "name": "@twol/pages",
   "version": "0.0.1",
   "repository": "https://github.com/vercel/examples.git",
   "license": "MIT",
@@ -47,8 +47,8 @@
     "react-dom": "^17.0.0 || ^18.0.0-0"
   },
   "dependencies": {
-    "@acme/design-system": "workspace:*",
-    "@acme/utils": "workspace:*",
+    "@twol/design-system": "workspace:*",
+    "@twol/utils": "workspace:*",
     "@swc/helpers": "^0.4.12",
     "@vercel/examples-ui": "^1.0.4",
     "clsx": "^1.1.1"
@@ -59,7 +59,7 @@
     "@types/react": "latest",
     "chokidar": "^3.5.3",
     "eslint": "^8.16.0",
-    "eslint-config-acme": "workspace:*",
+    "eslint-config-twol": "workspace:*",
     "typescript": "^4.5.5"
   }
 }

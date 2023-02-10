@@ -57,8 +57,8 @@ The example is a monorepo built with [Turborepo](https://turborepo.org/) with th
 - Next.js is used for the applications in [./apps](./apps)
 - Shared packages used by the apps in [./packages](./packages)
 - [Tailwind CSS](https://tailwindcss.com) for utility CSS in React components and to build the design system
-- Storybook is used for the components that are part of the [`acme-design-system`](./packages/acme-design-system) package and its setup is shared in the [`acme-storybook`](./packages/acme-storybook) package
-- The ESLint config lives in [eslint-config-acme](./packages/eslint-config-acme)
+- Storybook is used for the components that are part of the [`twol-design-system`](./packages/twol-design-system) package and its setup is shared in the [`twol-storybook`](./packages/twol-storybook) package
+- The ESLint config lives in [eslint-config-twol](./packages/eslint-config-twol)
 - [Changesets](https://github.com/changesets/changesets) to manage versioning and publishing of packages. Learn more in the [Versioning & Publishing Packages](#versioning--publishing-packages) section.
 
 ## How it Works
@@ -71,7 +71,7 @@ One of the challenges of building microfrontends is dependency management and bu
 
 ### Design System with Tailwind and CSS Modules
 
-[./packages/acme-design-system](./packages/acme-design-system) features multiple components with CSS Modules and [Tailwind](https://tailwindcss.com/). The components are installed in the app as a dependency and the compilation step is handled by [SWC](https://swc.rs/).
+[./packages/twol-design-system](./packages/twol-design-system) features multiple components with CSS Modules and [Tailwind](https://tailwindcss.com/). The components are installed in the app as a dependency and the compilation step is handled by [SWC](https://swc.rs/).
 
 All the CSS used by the app and components is unified by Tailwind, so having components outside the app doens't increase the CSS bundle size.
 
@@ -79,7 +79,7 @@ HMR and React Fast Refresh work as expected even though the components live outs
 
 ### Pages Living Outside the Next.js App
 
-[./packages/acme-pages](./packages/acme-pages) contains all the pages that are used in the Next.js app. They are compiled with [SWC](https://swc.rs/) and work in the same way as [./packages/acme-design-system](./packages/acme-design-system).
+[./packages/twol-pages](./packages/twol-pages) contains all the pages that are used in the Next.js app. They are compiled with [SWC](https://swc.rs/) and work in the same way as [./packages/twol-design-system](./packages/twol-design-system).
 
 With this approach, we will need to be mindful of dead code elimination when there is server-only code (e.g. `getStaticProps`, `getStaticPaths` or `getServerSideProps`) which can't be properly distinguished by the Next.js app. To avoid including server code in pages, it's recommended to have data fetching methods in a different file and import them from the page in the Next.js app.
 
@@ -146,8 +146,8 @@ turbo run build --filter=main... && changeset publish
 
 Turborepo will run the `build` script for all publishable dependencies of the `main` app, excluding the `main` app itself, and then publishes the new versions to npm.
 
-By default, this example uses `acme` as the npm organization. To change this, do the following:
+By default, this example uses `twol` as the npm organization. To change this, do the following:
 
-- Rename folders in `packages/*` to replace `acme` with your desired scope
-- Search and replace `acme` with your desired scope
+- Rename folders in `packages/*` to replace `twol` with your desired scope
+- Search and replace `twol` with your desired scope
 - Re-run `pnpm install`

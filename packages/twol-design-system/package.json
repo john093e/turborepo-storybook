@@ -1,5 +1,5 @@
 {
-  "name": "@acme/design-system",
+  "name": "@twol/design-system",
   "version": "0.0.1",
   "repository": "https://github.com/vercel/examples.git",
   "license": "MIT",
@@ -68,7 +68,7 @@
     "@types/react": "latest",
     "chokidar": "^3.5.3",
     "eslint": "^8.16.0",
-    "eslint-config-acme": "workspace:*",
+    "eslint-config-twol": "workspace:*",
     "typescript": "4.8.4"
   }
 }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-//import { Button } from '@acme/design-system'
+//import { Button } from '@twol/design-system'
 import Quote from '.'
 import '@vercel/examples-ui/globals.css'
 
@@ -14,6 +14,7 @@ import '@vercel/examples-ui/globals.css'
 // Default.args = { children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget consectetur tempor, nisl nunc egestas nisi, euismod aliquam nisl nunc euismod.' }
 
 const meta = {
+  title: 'Basic/Quote',
   component: Quote,
 } satisfies Meta<typeof Quote>;
 export default meta;

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-//import { Button } from '@acme/design-system'
+//import { Button } from '@twol/design-system'
 import Button from '.'
 import '@vercel/examples-ui/globals.css'
 
@@ -9,6 +9,7 @@ import '@vercel/examples-ui/globals.css'
 // } as Meta<typeof Button>
 
 const meta = {
+  title: 'Basic/Button',
   component: Button,
 } satisfies Meta<typeof Button>;
 export default meta;
