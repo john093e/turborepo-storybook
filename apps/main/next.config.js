@@ -8,11 +8,11 @@ module.exports = {
        */
       {
         source: '/docs',
-        destination: `${DOCS_URL}/`,
+        destination: `${DOCS_URL}/docs`,
       },
       {
         source: '/docs/:path*',
-        destination: `${DOCS_URL}/:path*`,
+        destination: `${DOCS_URL}/docs/:path*`,
       },
     ]
   },
