@@ -6,7 +6,7 @@ export default function Index() {
     <Page>
       <Navbar isDocsApp />
       <Text variant="h1" className="mb-6">
-        Docs
+        Docs !
       </Text>
       <Text className="mb-4">
         This is the index page in the docs app (
