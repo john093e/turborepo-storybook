@@ -48,7 +48,15 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "bcryptjs": "^2.4.3"
+  },
   "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/bcryptjs": "^2.4.2",
     "eslint": "^8.16.0",
     "eslint-config-twol": "workspace:*",
     "tsup": "^5.12.8",

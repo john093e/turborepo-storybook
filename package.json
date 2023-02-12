@@ -1,4 +1,5 @@
 {
+  "name": "twol",
   "repository": "https://github.com/vercel/examples.git",
   "license": "MIT",
   "private": true,
@@ -10,20 +11,30 @@
     "build": "turbo run build",
     "build:main": "turbo run build --filter=main...",
     "build:docs": "turbo run build --filter=docs...",
-    "dev": "turbo run dev",
-    "start": "turbo run start",
     "clean": "turbo run clean && rm -rf node_modules",
-    "lint": "turbo run lint",
-    "format": "prettier --write .",
+    "clean:workspaces": "turbo clean",
+    "db:generate": "turbo db:generate",
+    "db:migrate": "turbo db:migrate",
+    "db:push": "turbo db:push db:generate",
+    "dev": "turbo dev --parallel",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo lint && manypkg check",
+    "start": "turbo run start",
+    "type-check": "turbo type-check",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build --filter=main... && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.23.0",
+    "@manypkg/cli": "^0.19.2",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
     "@types/node": "^17.0.14",
-    "prettier": "^2.6.2",
-    "turbo": "latest"
+    "eslint": "^8.30.0",
+    "prettier": "^2.8.1",
+    "turbo": "latest",
+    "typescript": "^4.9.4"
   },
   "packageManager": "pnpm@7.15.0"
 }

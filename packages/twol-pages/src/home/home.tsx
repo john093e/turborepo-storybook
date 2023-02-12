@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Layout, Page, Text, Code, Link, Snippet } from '@vercel/examples-ui'
 import { Button, Quote } from '@twol/design-system'
-import { matchingTextColor, randomColor } from '@twol/utils'
+import { matchingTextColor, randomColor } from '@twol/utils/function'
 import Navbar from '../components/navbar'
 
 export default function Home() {
