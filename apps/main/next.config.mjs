@@ -9,6 +9,15 @@ const { DOCS_URL } = process.env
 
 /** @type {import("next").NextConfig} */
 const config = {
+  images: {
+    domains: [
+      "res.cloudinary.com",
+      "abs.twimg.com",
+      "pbs.twimg.com",
+      "avatars.githubusercontent.com",
+    ],
+  },
+  swcMinify: false, // Required to fix: https://nextjs.org/docs/messages/failed-loading-swc
   reactStrictMode: true,
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: ["@twol/api", "@twol/auth", "@twol/database"],
@@ -52,3 +61,20 @@ export default config;
 //     ]
 //   },
 // }
+
+
+// /**
+//  * @type {import('next').NextConfig}
+//  */
+// module.exports = {
+//   images: {
+//     domains: [
+//       "res.cloudinary.com",
+//       "abs.twimg.com",
+//       "pbs.twimg.com",
+//       "avatars.githubusercontent.com",
+//     ],
+//   },
+//   reactStrictMode: true,
+//   swcMinify: false, // Required to fix: https://nextjs.org/docs/messages/failed-loading-swc
+//};
