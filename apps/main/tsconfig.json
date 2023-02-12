@@ -43,9 +43,15 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "paths": {
-      "@lib/*": ["lib/*"],
       "@components": ["components/index"],
-      "@components/*": ["components/*"]
+      "@components/*": ["components/*"],
+      "@contexts/*": ["contexts/*"],
+      "@data/*": ["data/*"],
+      "@layouts/*": ["layouts/*"],
+      "@lib/*": ["lib/*"],
+      "@styles/*": ["styles/*"],
+      "@types": ["types/index"],
+      "@types/*": ["types/*"]
     },
     "incremental": true
   },
