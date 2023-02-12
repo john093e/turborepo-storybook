@@ -17,6 +17,7 @@ build
 dist
 
 # Misc
+*.DS_Store
 .DS_Store
 *.pem
 tsconfig.tsbuildinfo
@@ -27,7 +28,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local ENV files
+*.env
 .env
+*.env.development
 .env.development
 .env.local
 .env.development.local
@@ -35,6 +38,7 @@ yarn-error.log*
 .env.production.local
 
 # Vercel
+*.vercel
 .vercel
 
 # Turborepo
