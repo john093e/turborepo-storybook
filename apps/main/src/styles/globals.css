@@ -1,0 +1,208 @@
+/* @import url("/fonts/stylesheet.css"); */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .overflow-hidden {
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+  html {
+    font-family: "Rubik", sans-serif;
+  }
+}
+@layer components {
+  .animation-hover:after {
+    background: none repeat scroll 0 0 transparent;
+    content: "";
+    height: 2px;
+    transition: width 0.3s ease 0s, left 0.3s ease 0s;
+    @apply w-0 bg-orange-500 left-1/2 block bottom-0 absolute;
+  }
+  .animation-active:after {
+    @apply left-0 w-full;
+  }
+  .animation-hover:hover:after {
+    @apply left-0 w-full;
+  }
+
+  li.custom-list:before {
+    content: "\2022"; /* bullet point, for screen readers */
+    text-indent: -9999999px; /* move the bullet point out of sight */
+
+    width: 0.4em;
+    height: 1em;
+    background-repeat: no-repeat;
+
+    background-size: 0.4em 0.7em;
+    background-position: 0 0.3em;
+    font-size: 300%;
+    top: -0.35em;
+    @apply absolute block;
+  }
+  li.circle-check:before {
+    background-image: url("/static/Icon/checklist.svg");
+    left: -0.7em;
+    top: -0.4em;
+  }
+  li.check:before {
+    left: -0.5em;
+    background-image: url("/static/Icon/jam_check.svg");
+    top: -0.5em;
+    font-size: 400%;
+  }
+  /* Slideshow */
+  .slick-dots li {
+    @apply inline-block;
+  }
+  .slick-dots span {
+    @apply bg-gray-500;
+  }
+  .slick-dots .slick-active span {
+    @apply bg-orange-500 rounded-l-full rounded-r-full w-12;
+  }
+
+  /*Phone Input */
+  .phoneInput > .w-2\/6 > .w-full > div:first-child {
+    border-radius: 0.5rem 0rem 0rem 0.5rem;
+  }
+  .phoneInput > .w-2\/6 > .w-full > div:nth-child(2) > div:nth-child(2) {
+    max-height: 13em;
+  }
+  .phoneInput > .w-4\/6 > .flex > .w-full > input {
+    border-radius: 0rem 0.5rem 0.5rem 0rem;
+    border-left: none;
+  }
+
+  /*Tabs Group Flowbite*/
+  .gap-2.TabsGroup {
+    position: relative;
+  }
+  .gap-2.TabsGroup > div > button {
+    position: relative;
+    border: 1px solid rgb(229 231 235 / var(--tw-border-opacity));
+    border-left: none;
+    border-bottom: none;
+    background: rgb(243 244 246 / 1);
+  }
+  .gap-2.TabsGroup > div > button:first-child {
+    border-left: 1px solid rgb(229 231 235 / var(--tw-border-opacity));
+  }
+  .gap-2.TabsGroup > div > button[aria-selected="true"] {
+    background: rgb(255, 255, 255);
+  }
+  .gap-2.TabsGroup > div > button[aria-selected="true"]:after {
+    bottom: -1px;
+    content: " ";
+    height: 1px;
+    left: 0px;
+    position: absolute;
+    width: 100%;
+    background: rgb(255, 255, 255) !important;
+  }
+  .gap-2.TabsGroup div[role="tabpanel"] {
+    padding: 0;
+  }
+  .gap-2.TabsGroup > .TabsGroup > button {
+    outline: 0;
+  }
+  .gap-2.TabsGroup > .TabsGroup > button {
+    @apply dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600;
+  }
+  .gap-2.TabsGroup > .TabsGroup > button[aria-selected="true"] {
+    @apply dark:bg-gray-800;
+  }
+  .gap-2.TabsGroup > .TabsGroup > button[aria-selected="true"]::after {
+    @apply dark:!bg-gray-800;
+  }
+
+  /* Custom inline button */
+  .inlineButton {
+    @apply !inline !relative !text-blue-600 !p-0 !bg-transparent dark:focus:!ring-0 dark:!ring-0;
+  }
+  button.inlineButton:focus,
+  button.inlineButton:focus-within,
+  button.inlineButton:focus-visible,
+  button.inlineButton:active {
+    outline: 0 !important;
+    border: 0;
+  }
+  button.inlineButton:focus,
+  button.inlineButton:focus-within,
+  button.inlineButton:focus-visible,
+  button.inlineButton:active {
+    @apply dark:!outline-0 dark:focus:!ring-0 dark:!ring-0;
+  }
+  .inlineButton span {
+    @apply !text-blue-600 !p-0;
+  }
+  /* Custom Tables */
+  div[data-testid="table-element"]{
+    height: 100%!important;
+    width: 100%!important;
+    overflow: auto hidden!important;
+    position: relative!important;
+  }
+
+  /* customTimeline */
+  ol.customTimeline > li > div:first-child{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    color: #cbd6e2;
+
+  }
+  ol.customTimeline > li > div:last-child{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  ol.customTimeline > li > div > span{
+    flex: 0 0 auto;
+    line-height: 0;
+    z-index: 10;
+    padding: 4px 0;
+    transition: opacity .15s ease-out;
+    position: relative;
+    left: 0;
+  }
+  ol.customTimeline > li > div > div{
+    display: none;
+  }
+  ol.customTimeline > li > div:first-child::after, 
+  ol.customTimeline > li > div:first-child::before {
+    border-top: 2px solid currentColor;
+    content: " ";
+    position: relative;
+    width: 100%;
+  }
+  ol.customTimeline > li > div:first-child::after, 
+  ol.customTimeline > li > div:first-child::before {
+    flex: 1 1 100%;
+    display: inline-block;
+  }
+  ol.customTimeline > li.active > div:first-child {
+    color: #2b6ff3;
+  }
+  ol.customTimeline > li.active > div:first-child::after {
+    color: #cbd6e2;
+  }
+  ol.customTimeline > li:first-of-type > div:first-child::before, 
+  ol.customTimeline > li:last-of-type > div:first-child::after {
+    visibility: hidden;
+  }
+  ol.customTimeline > li.complete > div:first-child::after,
+  ol.customTimeline > li.complete > div:first-child::before {
+    color: #2b6ff3;
+  }
+  ol.customTimeline > li > div > span{
+    @apply ring-4;
+  }
+  ol.customTimeline > li.complete > div > span,
+  ol.customTimeline > li.active > div > span{
+    @apply ring-blue-600 ring-4;
+  }
+}
