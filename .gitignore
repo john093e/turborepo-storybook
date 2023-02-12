@@ -31,9 +31,13 @@ yarn-error.log*
 *.env
 */*.env
 **/*.env
+*/.env
+**/.env
 .env
 */*.env.development
 **/*.env.development
+*/.env.development
+**/.env.development
 *.env.development
 .env.development
 .env.local
