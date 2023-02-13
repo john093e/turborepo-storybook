@@ -1,0 +1,32 @@
+.customSideBar{
+    position: relative;
+}
+.customSideBar > div {
+    border-radius: 0;
+}
+.customSideBar ul li > button > span{
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    margin-left: 0.5rem;
+}
+
+.customSideBar ul li ul li a {
+    padding-left: 1rem;
+}
+.customSideBar ul > li > a > span {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem; 
+}
+
+.customSideBar ul li ul li{
+    margin-top: 0!important;
+    margin-bottom: 0!important;
+}
+
+.customSideBar > div > div > button ~ button span {
+    padding-left: 0;
+    padding-right: 0;
+}
+.customSideBar > div > div > button ~ button span svg{
+    height: 1em;
+}

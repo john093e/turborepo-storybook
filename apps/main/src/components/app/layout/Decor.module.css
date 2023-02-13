@@ -1,0 +1,79 @@
+@keyframes moveClouds {
+    0% {
+      left: 110%;
+    }
+    100% {
+      left: -50%;
+    }
+  }
+  
+  .cloud_one {
+    animation: moveClouds 50s ease-in-out infinite;
+  }
+  
+  .cloud_two {
+    animation: moveClouds 40s ease-in-out infinite;
+  }
+  
+  .character {
+    background: url('/static/3D/character.png') no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    z-index: 1;
+  }
+  
+  .cloud_one {
+    background: url('/static/3D/cloud_2.png') no-repeat;
+    position: absolute;
+    top: 65%;
+    left: 10%;
+    width: 180px;
+    height: 100px;
+    background-size: contain;
+    z-index: 2;
+  }
+  
+  .cloud_two {
+    background: url('/static/3D/cloud_1.png') no-repeat;
+    position: absolute;
+    top: 49%;
+    left: 50%;
+    width: 200px;
+    height: 100px;
+    background-size: contain;
+    z-index: 0;
+  }
+  
+  .sky {
+    /* add other styles for your element here */
+    width:100%;
+    height:100%;
+    position: relative;
+    overflow :hidden;
+    transition: all 1s ease;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  @keyframes star-twinkle {
+    0% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
+  }
+  
+  
