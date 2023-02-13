@@ -1,5 +1,5 @@
-import { activateONG } from "@/lib/api";
-import { HttpMethod } from "@/types";
+import { activateONG } from "@lib/api";
+import { HttpMethod } from "@types";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 

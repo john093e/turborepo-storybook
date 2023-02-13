@@ -1,5 +1,5 @@
-import { resetPassword } from "@/lib/api";
-import { HttpMethod } from "@/types";
+import { resetPassword } from "@lib/api";
+import { HttpMethod } from "@types";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 

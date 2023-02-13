@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { HttpMethod } from "@/types";
+import { HttpMethod } from "@types";
 
 import Stripe from "stripe";
 import { Readable } from "node:stream";

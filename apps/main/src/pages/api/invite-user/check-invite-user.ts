@@ -1,9 +1,9 @@
-import prisma from "@/lib/prisma";
-import { HttpMethod } from "@/types";
+import prisma from "@lib/prisma";
+import { HttpMethod } from "@types";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { cyrb53 } from "@/lib/auth/passwords";
+import { cyrb53 } from "@twol/utils/auth/passwords";
 
 /*
  * Note: This endpoint is to check if a User has been invited.

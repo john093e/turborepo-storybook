@@ -1,11 +1,11 @@
-import prisma from "@/lib/prisma";
-import { HttpMethod } from "@/types";
+import prisma from "@lib/prisma";
+import { HttpMethod } from "@types";
 import nodemailer from "nodemailer";
 import { hash, compare } from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { verifyPassword, cyrb53 } from "@/lib/auth/passwords";
-import { decrypt } from "@/lib/auth/crypto";
+import { verifyPassword, cyrb53 } from "@twol/utils/auth/passwords";
+import { decrypt } from "@twol/utils/auth/crypto";
 
 /*
  * Note: This endpoint is to check if the email exist and validate the possession of it from the user.

@@ -1,14 +1,15 @@
-import { createSite, deleteSite, getSite, updateSite } from "@/lib/api";
-import { unstable_getServerSession } from "next-auth/next";
+import { createSite, deleteSite, getSite, updateSite } from "@lib/api";
+import { getServerSession } from "next-auth/next";
 
-import { requestWrapper } from "./auth/[...nextauth]";
-import { HttpMethod } from "@/types";
+// import { requestWrapper } from "./auth/[...nextauth]";
+import { requestWrapper } from "@twol/auth";
+import { HttpMethod } from "@types";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function site(req: NextApiRequest, res: NextApiResponse) {
   const opts = requestWrapper(req, res);  
-  const session = await unstable_getServerSession(req, res, opts[2]);
+  const session = await getServerSession(req, res, opts[2]);
   if (!session) return res.status(401).end();
 
   switch (req.method) {

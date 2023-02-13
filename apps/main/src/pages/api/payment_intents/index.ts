@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { formatAmountForStripe } from '@/lib/stripe/stripe-helpers'
+import { formatAmountForStripe } from '@lib/stripe/stripe-helpers'
 
 
 export const CURRENCY = 'usd'

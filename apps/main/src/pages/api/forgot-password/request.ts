@@ -1,11 +1,11 @@
-import prisma from "@/lib/prisma";
-import { HttpMethod } from "@/types";
+import prisma from "@lib/prisma";
+import { HttpMethod } from "@types";
 import nodemailer from "nodemailer";
 import { hash, compare } from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { cyrb53 } from "@/lib/auth/passwords";
-import { decrypt } from "@/lib/auth/crypto";
+import { cyrb53 } from "@twol/utils/auth/passwords";
+import { decrypt } from "@twol/utils/auth/crypto";
 
 /**
  * Note: This endpoint is to create a password change request if the email exist from the user.

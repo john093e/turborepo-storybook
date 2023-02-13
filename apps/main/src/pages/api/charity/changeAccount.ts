@@ -1,17 +1,17 @@
-import prisma from "@/lib/prisma";
-import { HttpMethod } from "@/types";
-import { unstable_getServerSession } from "next-auth/next";
+import prisma from "@lib/prisma";
+import { HttpMethod } from "@types";
+import { getServerSession } from "next-auth/next";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requestWrapper } from "../auth/[...nextauth]";
-
+// import { requestWrapper } from "../auth/[...nextauth]";
+import { requestWrapper } from "@twol/auth";
 /*
  * Note: This endpoint is to switch from an account to another
  */
 
 export default async function post(req: NextApiRequest, res: NextApiResponse) {
   const opts = requestWrapper(req, res);
-  const session = await unstable_getServerSession(req, res, opts[2]);
+  const session = await getServerSession(req, res, opts[2]);
   if (!session) return res.status(401).end();
 
   if (req.method !== HttpMethod.GET) {
