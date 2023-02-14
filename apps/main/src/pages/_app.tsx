@@ -72,7 +72,7 @@ import type { LayoutProps } from '@vercel/examples-ui/layout'
 import { getLayout } from '@vercel/examples-ui'
 import '@vercel/examples-ui/globals.css'
 import { api } from '../lib/utils/api'
-
+import { Analytics } from '@vercel/analytics/react';
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getNestedLayout?: (page: ReactElement) => ReactNode
 }
@@ -97,6 +97,7 @@ const App = ({
             {getNestedLayout(
               <Layout title="Microfrontends" path="solutions/microfrontends">
                 <Component {...pageProps} />
+                <Analytics />
               </Layout>
             )}
           </Flowbite>
