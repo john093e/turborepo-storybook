@@ -68,9 +68,9 @@ import type { NextPage } from 'next'
 
 import type { ReactElement, ReactNode } from 'react'
 
-import type { LayoutProps } from '@vercel/examples-ui/layout'
-import { getLayout } from '@vercel/examples-ui'
-import '@vercel/examples-ui/globals.css'
+// import type { LayoutProps } from '@vercel/examples-ui/layout'
+// import { getLayout } from '@vercel/examples-ui'
+// import '@vercel/examples-ui/globals.css'
 import { api } from '../lib/utils/api'
 import { Analytics } from '@vercel/analytics/react';
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -90,15 +90,21 @@ const App = ({
   const Layout = getLayout<LayoutProps>(Component)
 
   return (
-    <PlausibleProvider domain="t-wol.ccom">
+    <PlausibleProvider domain="t-wol.com">
       <SessionProvider session={session}>
         <AppLoggedInProvider>
           <Flowbite>
-            {getNestedLayout(
-              <Layout title="Microfrontends" path="solutions/microfrontends">
+            {
+            
+            getNestedLayout(
+              // <Layout title="Microfrontends" path="solutions/microfrontends">
+              //   <Component {...pageProps} />
+              //   <Analytics />
+              // </Layout>
+              <>
                 <Component {...pageProps} />
                 <Analytics />
-              </Layout>
+              </>
             )}
           </Flowbite>
         </AppLoggedInProvider>
