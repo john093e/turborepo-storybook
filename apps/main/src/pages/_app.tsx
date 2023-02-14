@@ -87,7 +87,7 @@ const App = ({
 }: AppPropsWithLayout) => {
   // Use the layout defined at the page level, if available
   const getNestedLayout = Component.getNestedLayout ?? ((page) => page)
-  const Layout = getLayout<LayoutProps>(Component)
+  // const Layout = getLayout<LayoutProps>(Component)
 
   return (
     <PlausibleProvider domain="t-wol.com">
