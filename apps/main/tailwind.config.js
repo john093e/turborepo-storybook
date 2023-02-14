@@ -18,10 +18,10 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  presets: [
-    require('@vercel/examples-ui/tailwind'),
-    require('@twol/design-system/tailwind'),
-  ],
+  // presets: [
+  //   require('@vercel/examples-ui/tailwind'),
+  //   require('@twol/design-system/tailwind'),
+  // ],
   content: [
     "./node_modules/flowbite-react/**/*.js",
     "./pages/**/*.{js,ts,jsx,tsx}",
