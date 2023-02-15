@@ -18,19 +18,19 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  // presets: [
-  //   require('@vercel/examples-ui/tailwind'),
-  //   require('@twol/design-system/tailwind'),
-  // ],
+  presets: [
+    require('@vercel/examples-ui/tailwind'),
+    require('@twol/design-system/tailwind'),
+  ],
   content: [
-    "./node_modules/flowbite-react/**/*.js",
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./lib/**/*.{js,ts,jsx,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+    "./src/lib/**/*.{js,ts,jsx,tsx}",
     // Add the external packages that are using Tailwind CSS
     './node_modules/@vercel/examples-ui/**/*.js',
     './node_modules/@twol/design-system/**/*.js',
     './node_modules/@twol/pages/**/*.js',
+    "./node_modules/flowbite-react/**/*.js",
   ],
   darkMode: "class",
   theme: {
