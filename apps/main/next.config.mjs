@@ -34,7 +34,7 @@ const config = {
         has: [
           {
             type: 'host',
-            value: '(localhost|t-wol\.com|t-wol\.vercel\.app)',
+            value: '(app\.localhost|app\.t-wol\.com|app\.t-wol\.vercel\.app)',
           },
         ],
         destination: `${DOCS_URL}/docs`,
@@ -45,7 +45,7 @@ const config = {
           {
             type: 'host',
             // value: '(?<subdomain>.*)\\..*',
-            value: '(localhost|t-wol\.com|t-wol\.vercel\.app)',
+            value: '(app\.localhost|app\.t-wol\.com|app\.t-wol\.vercel\.app)',
           },
         ],
         destination: `${DOCS_URL}/docs/:path*`,

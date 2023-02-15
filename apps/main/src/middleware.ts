@@ -40,9 +40,13 @@ export default function middleware(req: NextRequest) {
       url.pathname = '/'
       return NextResponse.redirect(url)
     }
-
-    url.pathname = `/app${url.pathname}`
-    return NextResponse.rewrite(url)
+    // run Docs mono repo if in /docs/:path
+    if (url.pathname.startsWith('/docs')) {
+      return NextResponse.rewrite(url)
+    } else {
+      url.pathname = `/app${url.pathname}`
+      return NextResponse.rewrite(url)
+    }
   }
 
   // Rewrite root application to `/home` folder
@@ -52,13 +56,8 @@ export default function middleware(req: NextRequest) {
     hostname === 't-wol.com' ||
     hostname === 't-wol.vercel.app'
   ) {
-    // run Docs mono repo if in /docs/:path 
-    if(url.pathname.startsWith("/docs")){
-      return NextResponse.rewrite(url)
-    }else{
-      url.pathname = `/home${url.pathname}`
-      return NextResponse.rewrite(url)
-    }
+    url.pathname = `/home${url.pathname}`
+    return NextResponse.rewrite(url)
   }
 
   // Site des organismes caritatif
