@@ -202,6 +202,7 @@ export function requestWrapper(
       session({ session, user }) {
         if (session.user) {
           session.user.id = user.id
+          // session.user.role = user.role
           session.user.username = user.username
           session.user.name = user.firstname + ' ' + user.lastname
           session.user.image = user.image

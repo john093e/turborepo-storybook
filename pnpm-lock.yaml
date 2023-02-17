@@ -182,7 +182,7 @@ importers:
       '@types/nodemailer': 6.4.7
       '@types/react': 18.0.28
       '@types/react-color': 3.0.6
-      '@types/react-dom': 18.0.10
+      '@types/react-dom': 18.0.11
       '@types/uuid': 9.0.0
       autoprefixer: 10.4.13_postcss@8.4.21
       dotenv-cli: 6.0.0
@@ -201,7 +201,7 @@ importers:
       typescript: ^4.8.4
     dependencies:
       eslint: 8.33.0
-      eslint-config-next: 13.1.7-canary.11_4vsywjlpuriuw3tl5oq6zy5a64
+      eslint-config-next: 13.1.7-canary.17_4vsywjlpuriuw3tl5oq6zy5a64
       eslint-config-prettier: 8.6.0_eslint@8.33.0
       eslint-config-turbo: 0.0.7_eslint@8.33.0
     devDependencies:
@@ -213,8 +213,12 @@ importers:
       '@trpc/server': ^10.9.0
       '@twol/auth': '*'
       '@twol/database': '*'
+      '@twol/utils': '*'
+      '@types/bcryptjs': ^2.4.2
+      '@types/nodemailer': ^6.4.7
+      bcryptjs: ^2.4.3
       eslint: ^8.30.0
-      next-auth: ^4.18.8
+      nodemailer: ^6.8.0
       superjson: 1.12.1
       typescript: ^4.9.4
       zod: ^3.20.2
@@ -223,10 +227,14 @@ importers:
       '@trpc/server': 10.11.0
       '@twol/auth': link:../twol-auth
       '@twol/database': link:../twol-database
-      next-auth: 4.19.2
+      '@twol/utils': link:../twol-utils
+      bcryptjs: 2.4.3
+      nodemailer: 6.9.1
       superjson: 1.12.1
       zod: 3.20.6
     devDependencies:
+      '@types/bcryptjs': 2.4.2
+      '@types/nodemailer': 6.4.7
       eslint: 8.33.0
       typescript: 4.9.5
 
@@ -388,7 +396,7 @@ importers:
     devDependencies:
       '@types/bcryptjs': 2.4.2
       '@types/react': 18.0.28
-      '@types/react-dom': 18.0.10
+      '@types/react-dom': 18.0.11
       eslint: 8.33.0
       eslint-config-twol: link:../eslint-config-twol
       tsup: 5.12.9_typescript@4.9.5
@@ -2427,8 +2435,8 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/eslint-plugin-next/13.1.7-canary.11:
-    resolution: {integrity: sha512-6jKKyR7hFmZlAnn/HqYg+jgRbfjXqrPnV0U9s4eAEnBi4z3ZRXh/Ic/YIxUovcqg7eiaJXl38VzZWr+p+zq8Fw==}
+  /@next/eslint-plugin-next/13.1.7-canary.17:
+    resolution: {integrity: sha512-kfgfLEpSuc5XTa7uAWHa4OFD1I1yAtyEmnhLlch5JUwe46NXsL2luCussG1F0u/ovj33tyHM7PZNjNIPkI33rQ==}
     dependencies:
       glob: 7.1.7
     dev: false
@@ -2808,7 +2816,7 @@ packages:
     dependencies:
       '@storybook/client-logger': 7.0.0-beta.44
       '@storybook/core-events': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/global': 5.0.0
       '@storybook/manager-api': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
       '@storybook/preview-api': 7.0.0-beta.44
@@ -2929,7 +2937,7 @@ packages:
       '@storybook/client-logger': 7.0.0-beta.44
       '@storybook/components': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
       '@storybook/core-events': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/docs-tools': 7.0.0-beta.44
       '@storybook/global': 5.0.0
       '@storybook/manager-api': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
@@ -3098,7 +3106,7 @@ packages:
       '@babel/core': 7.20.12
       '@babel/preset-env': 7.20.2_@babel+core@7.20.12
       '@babel/types': 7.20.7
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/csf-tools': 7.0.0-beta.44
       '@storybook/node-logger': 7.0.0-beta.44
       '@storybook/types': 7.0.0-beta.44
@@ -3120,7 +3128,7 @@ packages:
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       '@storybook/client-logger': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/global': 5.0.0
       '@storybook/theming': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
       '@storybook/types': 7.0.0-beta.44
@@ -3185,7 +3193,7 @@ packages:
       '@storybook/builder-manager': 7.0.0-beta.44
       '@storybook/core-common': 7.0.0-beta.44
       '@storybook/core-events': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/csf-tools': 7.0.0-beta.44
       '@storybook/docs-mdx': 0.0.1-next.6
       '@storybook/global': 5.0.0
@@ -3243,7 +3251,7 @@ packages:
     resolution: {integrity: sha512-I9k49mHMuBkuw854VlCfXhL3t470yt47B/IVZYmT+ju1vvzcRjLCpdd4+dWvk5F0Z4lggSvcxD+VkqKXWJ/5Jg==}
     dependencies:
       '@babel/types': 7.20.7
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/types': 7.0.0-beta.44
       fs-extra: 11.1.0
       recast: 0.23.1
@@ -3252,11 +3260,9 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/csf/0.0.2-next.8:
-    resolution: {integrity: sha512-3T6rflW7D9q1iXOR+bidwoNbd9rVUTyjYH/sqsnYjbXhb/aOXsQzGKwNeq9QqZIFVpKfg5BoOF5i7DCMtoGknQ==}
+  /@storybook/csf/0.0.2-next.10:
+    resolution: {integrity: sha512-m2PFgBP/xRIF85VrDhvesn9ktaD2pN3VUjvMqkAL/cINp/3qXsCyI81uw7N5VEOkQAbWrY2FcydnvEPDEdE8fA==}
     dependencies:
-      expect-type: 0.14.2
-      lodash: 4.17.21
       type-fest: 2.19.0
     dev: true
 
@@ -3291,7 +3297,7 @@ packages:
       '@storybook/channels': 7.0.0-beta.44
       '@storybook/client-logger': 7.0.0-beta.44
       '@storybook/core-events': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/global': 5.0.0
       '@storybook/router': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
       '@storybook/theming': 7.0.0-beta.44_biqbaboplfbrettd7655fr4n2y
@@ -3337,7 +3343,7 @@ packages:
       '@storybook/channels': 7.0.0-beta.44
       '@storybook/client-logger': 7.0.0-beta.44
       '@storybook/core-events': 7.0.0-beta.44
-      '@storybook/csf': 0.0.2-next.8
+      '@storybook/csf': 0.0.2-next.10
       '@storybook/global': 5.0.0
       '@storybook/types': 7.0.0-beta.44
       '@types/qs': 6.9.7
@@ -4084,8 +4090,8 @@ packages:
       '@types/reactcss': 1.2.6
     dev: true
 
-  /@types/react-dom/18.0.10:
-    resolution: {integrity: sha512-E42GW/JA4Qv15wQdqJq8DL4JhNpB3prJgjgapN3qJT9K2zO5IIAQh4VXvCEDupoqAwnz0cY4RlXeC/ajX5SFHg==}
+  /@types/react-dom/18.0.11:
+    resolution: {integrity: sha512-O38bPbI2CWtgw/OoQoY+BRelw7uysmXbWvw3nLWO21H1HSh+GOlqPuXshJfjmpNlKiiSDG9cc1JZAaMmVdcTlw==}
     dependencies:
       '@types/react': 18.0.28
     dev: true
@@ -6152,8 +6158,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-config-next/13.1.7-canary.11_4vsywjlpuriuw3tl5oq6zy5a64:
-    resolution: {integrity: sha512-FMFBYkowURRmFxXmJFnsAhUe3eFahTsPowGxpxil4/rykwmw5phvUgrw1nNPZd+v+Z5g/Xf0O1xrURILIXkZxA==}
+  /eslint-config-next/13.1.7-canary.17_4vsywjlpuriuw3tl5oq6zy5a64:
+    resolution: {integrity: sha512-8u3DXfMOmJSZrnDjpqzytAT1qC19UhzaOzoH3Ahi8sP/xyFUZUg5bV810xsvTWhsi9WVJzPemY0GyRSVPz9R9Q==}
     peerDependencies:
       eslint: ^7.23.0 || ^8.0.0
       typescript: '>=3.3.1'
@@ -6161,7 +6167,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@next/eslint-plugin-next': 13.1.7-canary.11
+      '@next/eslint-plugin-next': 13.1.7-canary.17
       '@rushstack/eslint-patch': 1.2.0
       '@typescript-eslint/parser': 5.51.0_4vsywjlpuriuw3tl5oq6zy5a64
       eslint: 8.33.0
@@ -6557,10 +6563,6 @@ packages:
     engines: {node: '>=4'}
     dependencies:
       pify: 2.3.0
-    dev: true
-
-  /expect-type/0.14.2:
-    resolution: {integrity: sha512-ed3+tr5ujbIYXZ8Pl/VgIphwJQ0q5tBLGGdn7Zvwt1WyPBRX83xjT5pT77P/GkuQbctx0K2ZNSSan7eruJqTCQ==}
     dev: true
 
   /express/4.18.2:
@@ -8826,28 +8828,6 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: true
-
-  /next-auth/4.19.2:
-    resolution: {integrity: sha512-6V2YG3IJQVhgCAH7mvT3yopTW92gMdUrcwGX7NQ0dCreT/+axGua/JmVdarjec0C/oJukKpIYRgjMlV+L5ZQOQ==}
-    peerDependencies:
-      next: ^12.2.5 || ^13
-      nodemailer: ^6.6.5
-      react: ^17.0.2 || ^18
-      react-dom: ^17.0.2 || ^18
-    peerDependenciesMeta:
-      nodemailer:
-        optional: true
-    dependencies:
-      '@babel/runtime': 7.20.13
-      '@panva/hkdf': 1.0.2
-      cookie: 0.5.0
-      jose: 4.11.4
-      oauth: 0.9.15
-      openid-client: 5.4.0
-      preact: 10.12.1
-      preact-render-to-string: 5.2.6_preact@10.12.1
-      uuid: 8.3.2
-    dev: false
 
   /next-auth/4.19.2_3vryta7zmbcsw4rrqf4axjqggm:
     resolution: {integrity: sha512-6V2YG3IJQVhgCAH7mvT3yopTW92gMdUrcwGX7NQ0dCreT/+axGua/JmVdarjec0C/oJukKpIYRgjMlV+L5ZQOQ==}

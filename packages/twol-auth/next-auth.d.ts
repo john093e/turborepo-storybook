@@ -20,11 +20,16 @@
 //   }
 // }
 
+import NextAuth, { DefaultSession, DefaultUser } from 'next-auth'
 
-import NextAuth from "next-auth";
-
+/**
+ * Module augmentation for `next-auth` types
+ * Allows us to add custom properties to the `session` object
+ * and keep type safety
+ * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
+ */
 declare module "next-auth" {
-  interface Session {
+  interface Session extends DefaultSession {
     user: {
       /**
        * The user's email address
@@ -61,10 +66,10 @@ declare module "next-auth" {
        * The user's Lastname
        */
       lastname?: string | null;
-    };
+    } & DefaultSession['user']
   }
 
-  interface User {
+  interface User extends DefaultUser {
     /**
      * The user's email address
      */
