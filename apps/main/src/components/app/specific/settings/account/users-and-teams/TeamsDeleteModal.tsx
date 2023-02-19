@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useForm } from "react-hook-form";
+import toast from 'react-hot-toast'
 
 import { Button, Label, Modal, TextInput } from "flowbite-react";
 
-import { HttpMethod } from "@types";
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PropForm {
   name: string;
@@ -57,18 +58,15 @@ export default function TeamsDeleteModal({
   const [loading, setLoading] = useState<boolean>(false);
   const [resetTeamsSuccess, setResetTeamsSuccess] = useState<string | null>();
   const [resetTeamsError, setResetTeamsError] = useState<string | null>();
-  const onSubmit = handleSubmit(async (data) => {
-    try {
-      setLoading(true);
-      await fetch(
-        `/api/settings/account/users-and-teams/teams?userId=${userId}&id=${id}`,
-        {
-          method: HttpMethod.DELETE,
-        }
-      ).then((res) => {
-        setLoading(false);
 
-        if (res.ok) {
+
+  const {
+    mutate: deleteTeamsSettings,
+    isLoading: isLoadingDeleteTeamsSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsTeams.deleteTeamsSettings.useMutation(
+      {
+        async onSuccess(data) {
           setResetTeamsSuccess("C'est officiel cette Team a été supprimé ");
           setLoading(false);
           setResetTeamsError("");
@@ -76,17 +74,26 @@ export default function TeamsDeleteModal({
             setShowModal(false);
             finishProcess();
           }, 2000);
-        } else {
+          toast.success(`Teams deleted`, {
+            position: 'top-right',
+          })
+        },
+        onError(error) {
           setLoading(false);
           setResetTeamsError("An error occured");
           setResetTeamsSuccess(null);
-        }
-      });
-    } catch (error) {
-      setLoading(false);
-      setResetTeamsError("An error occured");
-      setResetTeamsSuccess(null);
-    }
+          toast.error(error.message, {
+            position: 'top-right',
+          })
+        },
+      }
+    )
+  const onSubmit = handleSubmit(async (data) => {
+      setLoading(true);
+      deleteTeamsSettings({
+          userId: userId,
+          id:id,
+      })
   });
   return (
     <div>

@@ -1,159 +1,142 @@
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import toast from "react-hot-toast";
-import { useForm } from "react-hook-form";
-import { encrypt } from "@twol/utils/auth/crypto";
+import { signIn } from 'next-auth/react'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import toast from 'react-hot-toast'
+import { useForm } from 'react-hook-form'
+import { encrypt } from '@twol/utils/auth/crypto'
 
-import LoadingDots from "@components/common/loading-dots/LoadingDots";
+import LoadingDots from '@components/common/loading-dots/LoadingDots'
 
-import { UilEye, UilEyeSlash } from "@iconscout/react-unicons";
+import { UilEye, UilEyeSlash } from '@iconscout/react-unicons'
 
-import AuthLayout from "@components/app/layout/AuthLayout";
+import AuthLayout from '@components/app/layout/AuthLayout'
 
+import { api, type RouterOutputs } from '@lib/utils/api'
 
-const pageTitle = "Connexion";
-const pageDescription = "Connecte toi à T-WOL pour gérer les dons et les donateurs.";
-const MINIMUM_TIMEOUT_FOR_ACTIVITY = 850;
+const pageTitle = 'Connexion'
+const pageDescription =
+  'Connecte toi à T-WOL pour gérer les dons et les donateurs.'
+const MINIMUM_TIMEOUT_FOR_ACTIVITY = 850
 
-
-const EMAIL_INVALID_ERROR_MESSAGE = "Le format de l'email est invalide.";
-const INVALID_CREDENTIALS_ERROR_MESSAGE = "Invalid Credentials";
-const EMAIL_VERIFICATION_ERROR_MESSAGE = "Une erreur est survenue lors de l'envoie du code de verification";
-const PASSWORD_FORMAT_ERROR_MESSAGE = "Le format du mot de passe est incorrect";
-const TOKEN_SAVE_ERROR_MESSAGE = "un problème est survenue lors de la sauvegarde du token";
-const UNEXPECTED_ERROR_MESSAGE = "Une erreur c'est produite lors de l'envoie du code auprès de votre adresse email. Si cela persiste veuillez prendre contact avec T-WOL.com.";
-const SERVER_CONNECTION_ERROR_MESSAGE = "Une erreur c'est produite lors de la connexion avec notre serveur, si cela persiste veuillez contacter T-WOL.com";
-const EMPTY_EMAIL_ERROR_MESSAGE = "Tu dois rentrer ton email.";
-const EMPTY_PASSWORD_ERROR_MESSAGE = "Tu dois rentrer ton mot de passe.";
+const EMAIL_INVALID_ERROR_MESSAGE = "Le format de l'email est invalide."
+const INVALID_CREDENTIALS_ERROR_MESSAGE = 'Invalid Credentials'
+const EMAIL_VERIFICATION_ERROR_MESSAGE =
+  "Une erreur est survenue lors de l'envoie du code de verification"
+const PASSWORD_FORMAT_ERROR_MESSAGE = 'Le format du mot de passe est incorrect'
+const TOKEN_SAVE_ERROR_MESSAGE =
+  'un problème est survenue lors de la sauvegarde du token'
+const UNEXPECTED_ERROR_MESSAGE =
+  "Une erreur c'est produite lors de l'envoie du code auprès de votre adresse email. Si cela persiste veuillez prendre contact avec T-WOL.com."
+const SERVER_CONNECTION_ERROR_MESSAGE =
+  "Une erreur c'est produite lors de la connexion avec notre serveur, si cela persiste veuillez contacter T-WOL.com"
+const EMPTY_EMAIL_ERROR_MESSAGE = 'Tu dois rentrer ton email.'
+const EMPTY_PASSWORD_ERROR_MESSAGE = 'Tu dois rentrer ton mot de passe.'
 
 type LoginFormValues = {
-  verificationNumber: string;
-  csrfToken: string;
-  email: string;
-  password: string;
-};
+  verificationNumber: string
+  csrfToken: string
+  email: string
+  password: string
+}
 
 export default function Login() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
   // Get error message added by next/auth in URL.
-  const { query } = useRouter();
-  const { error } = query;
+  const { query } = useRouter()
+  const { error } = query
   useEffect(() => {
-    const errorMessage = Array.isArray(error) ? error.pop() : error;
-    errorMessage && toast.error(errorMessage);
-  }, [error]);
-  const router = useRouter();
+    const errorMessage = Array.isArray(error) ? error.pop() : error
+    errorMessage && toast.error(errorMessage)
+  }, [error])
+  // Get router
+  const router = useRouter()
+  // Register the form
+  const { register, handleSubmit, getValues, setValue } =
+    useForm<LoginFormValues>()
 
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-  } = useForm<LoginFormValues>();
+  // function validate user
+  const { mutate: validateLoginUser, isLoading } =
+    api.auth.validateLoginUser.useMutation({
+      onSuccess(data) {
+        setLoading(false)
+        setStepForm('two')
+      },
+      onError(error) {
+        setLoading(false)
+        toast.error(error.message, {
+          position: 'top-right',
+        })
+      },
+    })
 
   const onSubmit = handleSubmit(async (data) => {
-    setLoading(true);
+    setLoading(true)
 
     // Encrypt password before sending to server
-    const hashPasswordToSend = encrypt(getValues("password"));
+    const hashPasswordToSend = encrypt(getValues('password'))
 
     try {
-      await signIn("admin-login", {
-        callbackUrl: "/",
+      await signIn('admin-login', {
+        callbackUrl: '/',
         email: data.email,
         passwordIV: hashPasswordToSend.iv,
         passwordContent: hashPasswordToSend.content,
         verificationNumber: data.verificationNumber,
-      });
+      })
 
       // Wait a minimum amount of time before setting loading to false to
       // provide feedback to the user that the form is being submitted
       setTimeout(() => {
-        setLoading(false);
-      }, MINIMUM_TIMEOUT_FOR_ACTIVITY);
+        setLoading(false)
+      }, MINIMUM_TIMEOUT_FOR_ACTIVITY)
     } catch (error) {
-      console.error(error);
+      console.error(error)
       //   setError(error)
-      setLoading(false);
+      setLoading(false)
     }
-  });
+  })
 
-  const [stepForm, setStepForm] = useState<string>("one");
+  const [stepForm, setStepForm] = useState<string>('one')
 
-  const [showPass, setShowPass] = useState<boolean>(false);
-
+  const [showPass, setShowPass] = useState<boolean>(false)
 
   const handleVerficationNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Remove non-numeric characters from input value
-    const result = e.target.value.replace(/\D/g, "");
+    const result = e.target.value.replace(/\D/g, '')
 
     // Set the value of the "verificationNumber" field in the form
-    setValue("verificationNumber", result);
-  };
-
-  async function verifyEmail() {
-    if (getValues("email").length === 0) {
-      setLoading(false);
-      toast.error(EMPTY_EMAIL_ERROR_MESSAGE);
-      return;
-    }
-
-    if (getValues("password") === null) {
-      setLoading(false);
-      toast.error(EMPTY_PASSWORD_ERROR_MESSAGE);
-      return;
-    }
-
-    const hash = encrypt(getValues("password"));
-    const verifyEmailFetch = await fetch(
-      `/api/charity/validate-login-user?userEmail=${getValues(
-        "email"
-      )}&userPassIv=${hash.iv}&userPassContent=${hash.content}`
-    );
-    const verifyEmailResult = await verifyEmailFetch.json();
-    if (verifyEmailResult) {
-      setLoading(false);
-      switch (verifyEmailResult) {
-        case "email invalid":
-          toast.error(EMAIL_INVALID_ERROR_MESSAGE);
-          break;
-        case "Invalid Credentials":
-        case "unknownUser":
-          toast.error(INVALID_CREDENTIALS_ERROR_MESSAGE);
-          break;
-        case "email not send":
-          toast.error(EMAIL_VERIFICATION_ERROR_MESSAGE);
-          break;
-        case "userPassContent":
-          toast.error(PASSWORD_FORMAT_ERROR_MESSAGE);
-          setLoading(false);
-          router.push(`/auth/login?error=emailIssue`);
-          break;
-        case "tokenNotSaved":
-          toast.error(TOKEN_SAVE_ERROR_MESSAGE);
-          setLoading(false);
-          router.push(`/auth/login?error=emailIssue`);
-          break;
-        case "allGood":
-          setStepForm("two");
-          break;
-        default:
-          toast.error(UNEXPECTED_ERROR_MESSAGE);
-          break;
-      }
-    } else {
-      setLoading(false);
-      toast.error(SERVER_CONNECTION_ERROR_MESSAGE);
-    }
+    setValue('verificationNumber', result)
   }
-  const [isButtonDisabledValue, setIsButtonDisabledValue] = useState<boolean>(true);
+
+  const verifyEmail = () => {
+    if (getValues('email').length === 0) {
+      setLoading(false)
+      toast.error(EMPTY_EMAIL_ERROR_MESSAGE)
+      return
+    }
+
+    if (getValues('password') === null) {
+      setLoading(false)
+      toast.error(EMPTY_PASSWORD_ERROR_MESSAGE)
+      return
+    }
+
+    const hash = encrypt(getValues('password'))
+
+    validateLoginUser({
+      userEmail: getValues('email'),
+      userPassIv: hash.iv,
+      userPassContent: hash.content,
+    })
+  }
+  const [isButtonDisabledValue, setIsButtonDisabledValue] =
+    useState<boolean>(true)
 
   const isButtonDisabled = () => {
-    const { email, password } = getValues();
-    return setIsButtonDisabledValue(!email || !password);
-  };
+    const { email, password } = getValues()
+    return setIsButtonDisabledValue(!email || !password)
+  }
   return (
     <AuthLayout pageTitle={pageTitle} pageDescription={pageDescription}>
       <form
@@ -161,7 +144,7 @@ export default function Login() {
         className="mt-8 flex w-full flex-col gap-4"
         onSubmit={onSubmit}
       >
-        {stepForm !== "two" && (
+        {stepForm !== 'two' && (
           <div className="w-full flex flex-col">
             <label
               htmlFor="email"
@@ -174,7 +157,7 @@ export default function Login() {
               id="email"
               type="email"
               autoComplete="email"
-              {...register("email", {
+              {...register('email', {
                 required: true,
                 onChange: () => isButtonDisabled(),
                 pattern:
@@ -184,7 +167,7 @@ export default function Login() {
             />
           </div>
         )}
-        {stepForm !== "two" && (
+        {stepForm !== 'two' && (
           <div className="w-full flex flex-col relative">
             <div className="w-full justify-between items-end flex flex-row relative">
               <label
@@ -196,17 +179,19 @@ export default function Login() {
               <Link
                 href="/auth/forgot-password"
                 className="block text-xs font-medium text-gray-600 dark:text-gray-400"
-              >Mot de passe oublié ?</Link>
+              >
+                Mot de passe oublié ?
+              </Link>
             </div>
 
             <div className="relative">
               <input
                 id="password"
-                type={!showPass ? "password" : "text"}
+                type={!showPass ? 'password' : 'text'}
                 autoComplete="off"
                 minLength={12}
                 required
-                {...register("password", {
+                {...register('password', {
                   required: true,
                   onChange: () => isButtonDisabled(),
                 })}
@@ -226,14 +211,13 @@ export default function Login() {
             </div>
           </div>
         )}
-        {stepForm === "two" && (
+        {stepForm === 'two' && (
           <div className="w-full flex flex-col">
             <label
               htmlFor="verificationNumber"
               className="block text-sm font-medium text-gray-700 dark:text-gray-200"
             >
-              Rentre le numéro de validation que nous t&apos;avons
-              envoyé
+              Rentre le numéro de validation que nous t&apos;avons envoyé
             </label>
 
             <input
@@ -241,7 +225,7 @@ export default function Login() {
               autoComplete="off"
               id="verificationNumber"
               placeholder="Numéro de validation"
-              {...register("verificationNumber")}
+              {...register('verificationNumber')}
               onChange={handleVerficationNumber}
               className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
             />
@@ -250,45 +234,47 @@ export default function Login() {
 
         <div className="w-full flex flex-col items-center gap-4">
           <div className="w-full flex flex-col">
-            {stepForm === "two" && (
+            {stepForm === 'two' && (
               <button
                 disabled={loading}
                 type="submit"
-                className={`${loading
-                  ? "cursor-not-allowed bg-gray-600"
-                  : "bg-black"
-                  } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
+                className={`${
+                  loading ? 'cursor-not-allowed bg-gray-600' : 'bg-black'
+                } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
               >
                 {loading ? (
                   <LoadingDots color="#fff" />
                 ) : (
-                  "Valider la connexion"
+                  'Valider la connexion'
                 )}
               </button>
             )}
           </div>
           <div className="w-full flex flex-col">
-            {stepForm === "one" && (
+            {stepForm === 'one' && (
               <button
                 type="button"
-                disabled={(loading === true || error === null || isButtonDisabledValue)}
+                disabled={
+                  loading === true || error === null || isButtonDisabledValue
+                }
                 onClick={(e) => {
-                  e.preventDefault();
-                  setLoading(true);
-                  verifyEmail();
+                  e.preventDefault()
+                  setLoading(true)
+                  verifyEmail()
                 }}
-                className={`${loading || error || isButtonDisabledValue
-                  ? "cursor-not-allowed bg-gray-600"
-                  : "bg-black"
-                  } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
+                className={`${
+                  loading || error || isButtonDisabledValue
+                    ? 'cursor-not-allowed bg-gray-600'
+                    : 'bg-black'
+                } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
               >
-                {loading ? <LoadingDots color="#fff" /> : "Connexion"}
+                {loading ? <LoadingDots color="#fff" /> : 'Connexion'}
               </button>
             )}
           </div>
         </div>
       </form>
-      {stepForm !== "two" && (
+      {stepForm !== 'two' && (
         <>
           <div className="inline-flex my-4 justify-center relative items-center w-full">
             <hr className="my-8 w-64 h-px bg-gray-200 border-0 dark:bg-gray-700" />
@@ -301,13 +287,12 @@ export default function Login() {
               <button
                 disabled={loading}
                 onClick={() => {
-                  setLoading(true);
-                  signIn("google", { callbackUrl: "/login" });
+                  setLoading(true)
+                  signIn('google', { callbackUrl: '/login' })
                 }}
-                className={`${loading
-                  ? "cursor-not-allowed bg-gray-600"
-                  : "bg-black"
-                  } inline-flex justify-center items-center w-full shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
+                className={`${
+                  loading ? 'cursor-not-allowed bg-gray-600' : 'bg-black'
+                } inline-flex justify-center items-center w-full shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
               >
                 {loading ? (
                   <LoadingDots color="#fff" />
@@ -343,7 +328,7 @@ export default function Login() {
             </div>
             <div className="flex items-center gap-4 my-6">
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 sm:mt-0">
-                Ton organisme n&apos;a pas encore de compte ?{" "}
+                Ton organisme n&apos;a pas encore de compte ?{' '}
                 <Link
                   href={`/auth/register`}
                   passHref
@@ -357,5 +342,5 @@ export default function Login() {
         </>
       )}
     </AuthLayout>
-  );
+  )
 }

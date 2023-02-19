@@ -39,7 +39,7 @@ export const inviteUserRouter = createTRPCRouter({
         inviteToken: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.userEmail) || Array.isArray(input.inviteToken)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -251,7 +251,7 @@ export const inviteUserRouter = createTRPCRouter({
         inviteToken: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.userEmail) || Array.isArray(input.inviteToken)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -512,7 +512,6 @@ export const inviteUserRouter = createTRPCRouter({
    *  - password
    *  - passwordConfirmation
    *  - marketingAccept
-   *  - activated
    *  - verificationNumber
    *
    *
@@ -540,21 +539,20 @@ export const inviteUserRouter = createTRPCRouter({
   acceptInvite: publicProcedure
     .input(
       z.object({
-        firstName: z.string(),
-        lastName: z.string(),
+        firstName: z.string().nullable(),
+        lastName: z.string().nullable(),
         language: z.string(),
         email: z.string(),
         passwordIv: z.string(),
         passwordContent: z.string(),
         passwordConfirmationIv: z.string(),
         passwordConfirmationContent: z.string(),
-        marketingAccept: z.boolean(),
-        activated: z.boolean(),
+        marketingAccept: z.boolean().nullable(),
         verificationNumber: z.string(),
         inviteToken: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       // 0- Validate data before processing them
       const given_inviteToken: string = input.inviteToken.replace(/\D/g, '')
       const given_verificationNumber: string = input.verificationNumber.replace(

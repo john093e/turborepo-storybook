@@ -1,62 +1,30 @@
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import useSWR, { mutate } from "swr";
-import LoadingDots from "@components/common/loading-dots/LoadingDots";
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import LoadingDots from '@components/common/loading-dots/LoadingDots'
+import toast from 'react-hot-toast'
 
-import { Badge, Button, Tooltip } from "flowbite-react";
-import { UilInfo } from "@iconscout/react-unicons";
-import Select from "@components/common/forms/select/Select";
+import { Badge, Button, Tooltip } from 'flowbite-react'
+import { UilInfo } from '@iconscout/react-unicons'
+import Select from '@components/common/forms/select/Select'
 
-import { fetcher } from "@lib/fetcher";
-import { HttpMethod } from "@types";
-import { usePrevious } from "@lib/hooks/use-previous";
+import { usePrevious } from '@lib/hooks/use-previous'
+
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 type TeamsPreferencesFormValues = {
-  name: string;
-  parentTeamId: string;
+  name: string
+  parentTeamId: string
   users: Array<{
-    id: string;
-  }>;
-};
-
-interface PropTeamsDrawer {
-  userId: string;
-  id: string | null;
-  closeProcess: () => void;
-  finishProcess: () => void;
+    id: string
+  }>
 }
 
-interface TeamsSettings {
-  team: Array<{
-    name: string;
-    parentTeam: {
-      name: string;
-      id: string;
-    };
-    B2E: Array<{
-      id: string;
-      user: {
-        firstname: string | null;
-        lastname: string | null;
-        email: string;
-      };
-    }>;
-  }> | null;
-  teams: Array<{
-    id: string;
-    name: string;
-    parentTeamId: string;
-  }>;
-  users: Array<{
-    id: string;
-    teamsId: string;
-    user: {
-      firstname: string;
-      lastname: string;
-      email: string;
-    };
-  }>;
+interface PropTeamsDrawer {
+  userId: string
+  id: string | null
+  closeProcess: () => void
+  finishProcess: () => void
 }
 
 export default function TeamsDrawer({
@@ -65,28 +33,34 @@ export default function TeamsDrawer({
   closeProcess,
   finishProcess,
 }: PropTeamsDrawer) {
-  const [showDrawer, setShowDrawer] = useState<boolean>(true);
+  const [showDrawer, setShowDrawer] = useState<boolean>(true)
 
   const handleCloseDrawer = () => {
-    setShowDrawer(false);
+    setShowDrawer(false)
     setTimeout(() => {
-      closeProcess();
-    }, 100);
-  };
+      closeProcess()
+    }, 100)
+  }
 
-  const router = useRouter();
+  const router = useRouter()
 
   // Get data for Form
-  const { data: teamsSettings } = useSWR<TeamsSettings | null>(
-    userId &&
-      `/api/settings/account/users-and-teams/teams-drawer?userId=${userId}&id=${id}`,
-    fetcher,
+  const {
+    data: teamsSettings,
+    isLoading: isLoadingTeamsSettings,
+    refetch: refetchTeamsSettings,
+  } = api.adminSettingsAccountUsersAndTeamsTeams.getTeamsDrawerSettings.useQuery(
     {
-      onError: () => router.push("/"),
-      revalidateOnFocus: false, // on come back to page
-      revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
-      revalidateIfStale: true, //if data stale retry
-      revalidateOnMount: true,
+      userId: userId,
+      id: id,
+    },
+    {
+      retry: 1,
+      onError: () => router.push('/'),
+      refetchOnWindowFocus: true, // on come back to page
+      refetchInterval: false, // ?
+      refetchIntervalInBackground: false, // ?
+      refetchOnReconnect: true, // computer come out of standby (reconnect to web)
       onSuccess: (data) => {
         if (
           data &&
@@ -99,10 +73,10 @@ export default function TeamsDrawer({
           ) {
             //parent Team list
             let optionsParentTeamsArray: Array<{
-              value: string;
-              label: string;
-              disabled?: boolean;
-            }> = [];
+              value: string
+              label: string
+              disabled?: boolean
+            }> = []
             data.teams.forEach((team) => {
               optionsParentTeamsArray.push({
                 value: team.id,
@@ -112,80 +86,79 @@ export default function TeamsDrawer({
                     ? true
                     : false
                   : false,
-              });
-              setOptionsParentTeam(optionsParentTeamsArray);
-            });
+              })
+              setOptionsParentTeam(optionsParentTeamsArray)
+            })
 
             //Team Member list
             let optionsTeamMemberArray: Array<{
-              value: string;
-              label: string;
-              disabled?: boolean;
-            }> = [];
+              value: string
+              label: string
+              disabled?: boolean
+            }> = []
             data.users.forEach((user) => {
               optionsTeamMemberArray.push({
                 value: user.id,
                 label:
-                  user.user.firstname && user.user.lastname
-                    ? user.user.firstname + " " + user.user.lastname
-                    : user.user.email,
+                  user?.user?.firstname && user?.user?.lastname
+                    ? user.user.firstname + ' ' + user.user.lastname
+                    : user?.user?.email!,
                 disabled: user.teamsId ? true : false,
-              });
-              setOptionsTeamMember(optionsTeamMemberArray);
-            });
+              })
+              setOptionsTeamMember(optionsTeamMemberArray)
+            })
 
             //if update team set data in the form
             if (id && id !== null && id !== undefined) {
-              if (data.team) {
+              if (data.team && data.team[0] !== undefined) {
                 if (data.team[0].name) {
-                  setValueTeamsPreferences("name", data.team[0].name, {
+                  setValueTeamsPreferences('name', data.team[0].name, {
                     shouldDirty: true,
                     shouldValidate: true,
-                  });
+                  })
                   // set users
-                  let usersArray: Array<{ id: string }> = [];
+                  let usersArray: Array<{ id: string }> = []
                   let usersArrayTeamMember: Array<{
-                    value: string;
-                    label: string;
-                  }> = [];
+                    value: string
+                    label: string
+                  }> = []
                   data.team[0].B2E.forEach((user: any) => {
-                    usersArray.push({ id: user.id });
+                    usersArray.push({ id: user.id })
                     usersArrayTeamMember.push({
                       value: user.id,
                       label:
                         user.user.firstname && user.user.lastname
-                          ? user.user.firstname + " " + user.user.lastname
+                          ? user.user.firstname + ' ' + user.user.lastname
                           : user.user.email,
-                    });
-                  });
-                  setValueTeamsPreferences("users", usersArray);
-                  setTeamMember(usersArrayTeamMember);
+                    })
+                  })
+                  setValueTeamsPreferences('users', usersArray)
+                  setTeamMember(usersArrayTeamMember)
                   // set parentTeam
                   if (data.team[0].parentTeam) {
                     setValueTeamsPreferences(
-                      "parentTeamId",
+                      'parentTeamId',
                       data.team[0].parentTeam.id
-                    );
+                    )
                     setParentTeam({
                       value: data.team[0].parentTeam.id,
                       label: data.team[0].parentTeam.name,
-                    });
+                    })
                   }
                 }
               }
             }
 
-            setDataInFormUpdated(!dataInFormUpdated);
+            setDataInFormUpdated(!dataInFormUpdated)
           }
         }
       },
     }
-  );
-
-  const previousTeamsSettings = usePrevious({ teamsSettings });
-  const [saving, setSaving] = useState<boolean>(false);
-  const [dataInFormUpdated, setDataInFormUpdated] = useState<boolean>(false);
-  const [teamsDrawerError, setTeamsDrawerError] = useState<string | null>(null);
+  )
+  const previousTeamsSettings = usePrevious({ teamsSettings })
+  const [saving, setSaving] = useState<boolean>(false)
+  const [dataInFormUpdated, setDataInFormUpdated] = useState<boolean>(false)
+  const [teamsDrawerError, setTeamsDrawerError] = useState<string | null>(null)
 
   // Form
   const {
@@ -196,125 +169,136 @@ export default function TeamsDrawer({
     formState: formStateTeamsPreferences,
   } = useForm<TeamsPreferencesFormValues>({
     defaultValues: {
-      name: "",
-      parentTeamId: "",
+      name: '',
+      parentTeamId: '',
       users: [],
     },
-  });
+  })
 
   // Parent Team
   const [optionsParentTeam, setOptionsParentTeam] = useState<
     Array<{ value: string; label: string }>
-  >([]);
+  >([])
   const [parentTeam, setParentTeam] = useState<{
-    value: string;
-    label: string;
-  } | null>(null);
+    value: string
+    label: string
+  } | null>(null)
   const handleChangeParentTeam = (value: any) => {
     if (value) {
-      setParentTeam(value);
-      setValueTeamsPreferences("parentTeamId", value.value, {
+      setParentTeam(value)
+      setValueTeamsPreferences('parentTeamId', value.value, {
         shouldDirty: true,
-      });
+      })
     } else {
-      setValueTeamsPreferences("parentTeamId", "", {
+      setValueTeamsPreferences('parentTeamId', '', {
         shouldDirty: false,
-      });
+      })
     }
-  };
+  }
 
   // Users
   const [optionsTeamMember, setOptionsTeamMember] = useState<
     Array<{ value: string; label: string }>
-  >([]);
+  >([])
   const [teamMember, setTeamMember] = useState<
     Array<{ value: string; label: string }>
-  >([]);
+  >([])
   const handleChangeTeamMember = (value: any) => {
     if (value) {
-      setTeamMember(value);
-      let usersArray: Array<{ id: string }> = [];
+      setTeamMember(value)
+      let usersArray: Array<{ id: string }> = []
       value.forEach((user: any) => {
-        usersArray.push({ id: user.value });
-      });
-      setValueTeamsPreferences("users", usersArray, {
+        usersArray.push({ id: user.value })
+      })
+      setValueTeamsPreferences('users', usersArray, {
         shouldDirty: true,
-      });
+      })
     } else {
-      setTeamMember(value);
-      setValueTeamsPreferences("users", [], {
+      setTeamMember(value)
+      setValueTeamsPreferences('users', [], {
         shouldDirty: false,
-      });
+      })
     }
-  };
+  }
 
+  // saving function
+  const {
+    mutate: createTeamsDrawerSettings,
+    isLoading: isLoadingCreateTeamsDrawerSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsTeams.createTeamsDrawerSettings.useMutation(
+      {
+        async onSuccess(data) {
+          setSaving(false)
+          setTeamsDrawerError(null)
+          finishProcess()
+          toast.success(`Teams created`, {
+            position: 'top-right',
+          })
+        },
+        onError(error) {
+          setSaving(false)
+          setTeamsDrawerError('An error occured')
+          toast.error(error.message, {
+            position: 'top-right',
+          })
+        },
+      }
+    )
+  const {
+    mutate: updateTeamsDrawerSettings,
+    isLoading: isLoadingUpdateTeamsDrawerSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsTeams.updateTeamsDrawerSettings.useMutation(
+      {
+        async onSuccess(data) {
+          setSaving(false)
+          setTeamsDrawerError(null)
+          finishProcess()
+          toast.success(`Teams updated`, {
+            position: 'top-right',
+          })
+        },
+        onError(error) {
+          setSaving(false)
+          setTeamsDrawerError('An error occured')
+          toast.error(error.message, {
+            position: 'top-right',
+          })
+        },
+      }
+    )
   const onSubmit = handleSubmitTeamsPreferences(async (data) => {
     try {
-      setSaving(true);
+      setSaving(true)
       if (id) {
-        const response = await fetch(
-          "/api/settings/account/users-and-teams/teams-drawer",
-          {
-            method: HttpMethod.PUT,
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: userId,
-              id: id,
-              name: data.name,
-              parentTeamId: data.parentTeamId,
-              users: data.users,
-            }),
-          }
-        );
-
-        if (response.ok) {
-          setSaving(false);
-          setTeamsDrawerError(null);
-          finishProcess();
-        } else {
-          setSaving(false);
-          setTeamsDrawerError("An error occured");
-        }
+        updateTeamsDrawerSettings({
+          userId: userId,
+          id: id,
+          name: data.name,
+          parentTeamId: data.parentTeamId,
+          users: data.users,
+        })
       } else {
-        const response = await fetch(
-          "/api/settings/account/users-and-teams/teams-drawer",
-          {
-            method: HttpMethod.POST,
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: userId,
-              name: data.name,
-              parentTeamId: data.parentTeamId,
-              users: data.users,
-            }),
-          }
-        );
-        const dataresp = await response.json();
-        if (dataresp === "allGood") {
-          setSaving(false);
-          setTeamsDrawerError(null);
-          finishProcess();
-        } else {
-          setSaving(false);
-          setTeamsDrawerError("An error occured");
-        }
+        createTeamsDrawerSettings({
+          userId: userId,
+          name: data.name,
+          parentTeamId: data.parentTeamId,
+          users: data.users,
+        })
       }
     } catch (error) {
-      setSaving(false);
-      setTeamsDrawerError("An error occured");
+      setSaving(false)
+      setTeamsDrawerError('An error occured')
     }
-  });
+  })
 
   return (
     <>
       <div
         id="drawer-create-teams-default"
         className={`fixed top-0 right-0 z-40 w-full h-screen flex flex-col max-w-xs overflow-y-auto transition-transform bg-white dark:bg-gray-800 ${
-          showDrawer ? "transform-none" : "translate-x-full"
+          showDrawer ? 'transform-none' : 'translate-x-full'
         }`}
         tabIndex={-1}
         aria-labelledby="drawer-label"
@@ -326,7 +310,7 @@ export default function TeamsDrawer({
             id="drawer-label"
             className="inline-flex items-center text-sm font-semibold text-gray-500 uppercase dark:text-gray-100"
           >
-            {id ? "Update team" : "Create team"}
+            {id ? 'Update team' : 'Create team'}
           </h5>
           <button
             type="button"
@@ -355,7 +339,7 @@ export default function TeamsDrawer({
         <div className="h-full w-full flex flex-col">
           {!dataInFormUpdated ? (
             <div className="h-full w-full flex flex-col items-center justify-center">
-              <LoadingDots color="#000" />{" "}
+              <LoadingDots color="#000" />{' '}
             </div>
           ) : (
             <form action="#" onSubmit={onSubmit}>
@@ -370,7 +354,7 @@ export default function TeamsDrawer({
                   <input
                     type="text"
                     id="name"
-                    {...registerTeamsPreferences("name", {
+                    {...registerTeamsPreferences('name', {
                       required: true,
                       pattern:
                         /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð]+(([',. -][a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ])?[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð]*)*$/,
@@ -448,7 +432,7 @@ export default function TeamsDrawer({
                           <div key={index}>
                             <h2>{teamMember.label}</h2>
                           </div>
-                        );
+                        )
                       })
                     : null}
                 </div>
@@ -467,9 +451,9 @@ export default function TeamsDrawer({
                 >
                   {!saving ? (
                     id ? (
-                      "Update"
+                      'Update'
                     ) : (
-                      "Create"
+                      'Create'
                     )
                   ) : (
                     <div className="h-full">
@@ -514,5 +498,5 @@ export default function TeamsDrawer({
         onClick={saving ? () => null : handleCloseDrawer}
       ></div>
     </>
-  );
+  )
 }

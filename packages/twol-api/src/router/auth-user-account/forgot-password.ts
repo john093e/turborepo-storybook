@@ -27,13 +27,13 @@ export const forgotPasswordRouter = createTRPCRouter({
    * or the result "ok"
    *
    */
-  forgotPasswordRouter: publicProcedure
+  requestReset: publicProcedure
     .input(
       z.object({
         email: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.email)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -185,7 +185,7 @@ export const forgotPasswordRouter = createTRPCRouter({
                     },
                     secure: true,
                   })
-                  const link = `https://${process.env.VERCEL_URL}/forgot-password/${randomNumberToSend}/${uEmail}`
+                  const link = `https://${process.env.VERCEL_URL}/auth/forgot-password/${randomNumberToSend}/${uEmail}`
 
                   const mailData = {
                     from: process.env.EMAIL_NAME,
@@ -335,7 +335,7 @@ export const forgotPasswordRouter = createTRPCRouter({
         token: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.email)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',

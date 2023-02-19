@@ -1,11 +1,10 @@
-import { useRouter } from "next/router";
-import Image from "next/image";
-import Link from "next/link";
-import dynamic from "next/dynamic";
+import { useRouter } from 'next/router'
+import Image from 'next/image'
+import Link from 'next/link'
+import dynamic from 'next/dynamic'
 
-import useSWR, { mutate } from "swr";
-import { useContext, useState, useEffect } from "react";
-import { useDebounce } from "use-debounce";
+import { useContext, useState, useEffect } from 'react'
+import { useDebounce } from 'use-debounce'
 
 import {
   Badge,
@@ -16,7 +15,7 @@ import {
   Table,
   TextInput,
   Tooltip,
-} from "flowbite-react";
+} from 'flowbite-react'
 
 import {
   UilSearchAlt,
@@ -24,200 +23,179 @@ import {
   UilInfo,
   UilSortAmountDown,
   UilSortAmountUp,
-} from "@iconscout/react-unicons";
+} from '@iconscout/react-unicons'
+
 const CreateUser = dynamic(
   () =>
     import(
-      "@components/app/specific/settings/account/users-and-teams/users/CreateUser"
+      '@components/app/specific/settings/account/users-and-teams/users/CreateUser'
     ),
   {
     ssr: false,
   }
-);
-import { fetcher } from "@lib/fetcher";
+)
 
-import { User, B2E } from "@prisma/client";
+import { AppLoggedInContext } from '@contexts/AppLoggedInContext'
 
-import { AppLoggedInContext } from "@contexts/AppLoggedInContext";
-import { AppLoggedInContextType } from "@types/appLoggedInContext";
-
-interface AccountUsers extends Pick<B2E, "role" | "status"> {
-  user: Pick<User, "email" | "firstname" | "id" | "image" | "lastname">;
-  teams: string;
-  PermissionSets: {
-    name: string | null | undefined;
-    access: {
-      AccountManager: boolean;
-      SuperAdmin: boolean;
-      SalesProfessional: boolean;
-      Marketing: boolean;
-      Sales: boolean;
-      Service: boolean;
-      Reports: boolean;
-      Account: boolean;
-    };
-  }
-}
-
-interface AccountUsersList {
-  data: Array<AccountUsers>;
-  pagination: {
-    total: number;
-    pageCount: number;
-    currentPage: number;
-    perPage: number;
-    from: number;
-    to: number;
-  };
-}
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PropForm {
-  userId: string;
+  userId: string
 }
 export default function Users({ userId }: PropForm) {
-  const router = useRouter();
+  const router = useRouter()
 
   // pagination table
-  const [toTake, setToTake] = useState(25);
-  const [toSkip, setToSkip] = useState(1);
+  const [toTake, setToTake] = useState(25)
+  const [toSkip, setToSkip] = useState(1)
   // search user
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500)
   // pagination table
-  const [toOrderBy, setToOrderBy] = useState("");
-  const [toOrderByStartWith, setToOrderByStartWith] = useState("");
+  const [toOrderBy, setToOrderBy] = useState('')
+  const [toOrderByStartWith, setToOrderByStartWith] = useState('')
   // Filters
   const [toFilterBy, setToFilterBy] = useState<
     { category: string; selected: string }[]
-  >([]);
-  const [toFilterByLink, setToFilterByLink] = useState<string>("");
+  >([])
+  const [toFilterByLink, setToFilterByLink] = useState<string>('')
 
   // get all users from this account
-  const { data: usersList } = useSWR<AccountUsersList>(
-    userId &&
-    `/api/settings/account/users-and-teams/users?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}${toFilterByLink}`,
-    fetcher,
+  const {
+    data: usersList,
+    isLoading: isLoadingUsersList,
+    refetch: refetchUsersList,
+  } = api.adminSettingsAccountUsersAndTeamsUsers.getUsersSettings.useQuery(
     {
-      onError: () => router.push("/"),
-      revalidateOnFocus: true, // on come back to page
-      revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
-      revalidateIfStale: true, //if data stale retry
+      userId: userId,
+      toTake: toTake,
+      toSkip: toSkip,
+      searchTerm: debouncedSearchTerm,
+      toOrderBy: toOrderBy,
+      toOrderByStartWith: toOrderByStartWith,
+    },
+    {
+      retry: 1,
+      onError: () => router.push('/'),
+      refetchOnWindowFocus: true, // on come back to page
+      refetchInterval: false, // ?
+      refetchIntervalInBackground: false, // ?
+      refetchOnReconnect: true, // computer come out of standby (reconnect to web)
     }
-  );
+  )
 
   useEffect(() => {
     if (debouncedSearchTerm !== null || debouncedSearchTerm !== undefined) {
-      setToTake(25);
-      setToSkip(1);
-      setToOrderBy("");
-      setToOrderByStartWith("");
-      mutate(`/api/settings/account/users-and-teams/users`);
+      setToTake(25)
+      setToSkip(1)
+      setToOrderBy('')
+      setToOrderByStartWith('')
+      refetchUsersList()
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm])
 
   // Handle Order By
   const handleOrderBy = (categoryName: string) => {
-    if (toOrderBy === "") {
-      setToOrderBy(categoryName);
-      setToOrderByStartWith("asc");
+    if (toOrderBy === '') {
+      setToOrderBy(categoryName)
+      setToOrderByStartWith('asc')
     } else {
       if (toOrderBy !== categoryName) {
-        setToOrderBy(categoryName);
-        setToOrderByStartWith("asc");
+        setToOrderBy(categoryName)
+        setToOrderByStartWith('asc')
       } else {
-        if (toOrderByStartWith === "asc") {
-          setToOrderByStartWith("desc");
+        if (toOrderByStartWith === 'asc') {
+          setToOrderByStartWith('desc')
         } else {
-          setToOrderBy("");
-          setToOrderByStartWith("");
+          setToOrderBy('')
+          setToOrderByStartWith('')
         }
       }
     }
-    mutate("/api/settings/account/users-and-teams/users");
-  };
+  }
 
   // Handle Filter
   const handleFilter = (
     filterCategoryName: string,
     filterSelectedName: string
   ) => {
-    if (filterCategoryName !== "" && filterSelectedName !== "") {
+    if (filterCategoryName !== '' && filterSelectedName !== '') {
       const categoryIsFound = toFilterBy.some((filter) => {
         if (filter.category === filterCategoryName) {
-          return true;
+          return true
         }
-        return false;
-      });
+        return false
+      })
       if (categoryIsFound) {
-        if (filterSelectedName === "All") {
+        if (filterSelectedName === 'All') {
           setToFilterBy(
             toFilterBy.filter((item) => item.category !== filterCategoryName)
-          );
+          )
           // set link filter
-          let link = "";
+          let link = ''
           toFilterBy
             .filter((item) => item.category !== filterCategoryName)
             .forEach((item, key) => {
-              link += "&" + item.category + "=" + item.selected;
-            });
-          setToFilterByLink(link);
+              link += '&' + item.category + '=' + item.selected
+            })
+          setToFilterByLink(link)
         } else {
           setToFilterBy(
             toFilterBy.filter((item) => item.category !== filterCategoryName)
-          );
+          )
           setToFilterBy((prevToFilterBy) => [
             ...prevToFilterBy,
             { category: filterCategoryName, selected: filterSelectedName },
-          ]);
+          ])
           // set link filter
-          let link = "";
+          let link = ''
           let filterForLink = toFilterBy.filter(
             (item) => item.category !== filterCategoryName
-          );
+          )
           filterForLink = [
             ...filterForLink,
             { category: filterCategoryName, selected: filterSelectedName },
-          ];
+          ]
           filterForLink.forEach((item, key) => {
-            link += "&" + item.category + "=" + item.selected;
-          });
-          setToFilterByLink(link);
+            link += '&' + item.category + '=' + item.selected
+          })
+          setToFilterByLink(link)
         }
       } else {
-        if (filterSelectedName === "All") {
+        if (filterSelectedName === 'All') {
         } else {
           setToFilterBy((prevToFilterBy) => [
             ...prevToFilterBy,
             { category: filterCategoryName, selected: filterSelectedName },
-          ]);
+          ])
           // set link filter
-          let link = "";
+          let link = ''
           let filterForLink = [
             ...toFilterBy,
             { category: filterCategoryName, selected: filterSelectedName },
-          ];
+          ]
           filterForLink.forEach((item, key) => {
-            link += "&" + item.category + "=" + item.selected;
-          });
-          setToFilterByLink(link);
+            link += '&' + item.category + '=' + item.selected
+          })
+          setToFilterByLink(link)
         }
       }
-      mutate("/api/settings/account/users-and-teams/users");
+      refetchUsersList()
     }
-  };
+  }
 
   const getFilters = (filterCategoryName: string) => {
-    if (filterCategoryName !== "") {
-      let toReturn = "All";
+    if (filterCategoryName !== '') {
+      let toReturn = 'All'
       const categorySelectedValue = toFilterBy.map((filter) => {
         if (filter.category === filterCategoryName) {
           toReturn = filter.selected
         }
-      });
-      return toReturn;
+      })
+      return toReturn
     }
-    return "All";
-  };
+    return 'All'
+  }
 
   // Just an arrow
   const arrowDown = (
@@ -238,31 +216,24 @@ export default function Users({ userId }: PropForm) {
         d="M19 9l-7 7-7-7"
       ></path>
     </svg>
-  );
+  )
 
   //Export users
   const [openModalExportUsers, setOpenModalExportUsers] =
-    useState<boolean>(false);
+    useState<boolean>(false)
 
   //Action Modal
   const [openModalActionsUsers, setOpenModalActionsUsers] =
-    useState<boolean>(false);
+    useState<boolean>(false)
 
   //create a User
-  const { setRootModal, resetRootModal } = useContext(
-    AppLoggedInContext
-  ) as AppLoggedInContextType;
-
-
+  const { setRootModal, resetRootModal } = useContext(AppLoggedInContext)
 
 
   const finishProcessCreateUser = () => {
-    resetRootModal();
-    mutate(
-      `/api/settings/account/users-and-teams/users?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}${toFilterByLink}`
-    );
-  };
-
+    resetRootModal()
+    refetchUsersList()
+  }
 
   const handleCreateNewUser = () => {
     setRootModal(
@@ -271,14 +242,14 @@ export default function Users({ userId }: PropForm) {
         finishProcess={finishProcessCreateUser}
         userId={userId}
       />
-    );
-  };
+    )
+  }
 
   return (
     <>
       <p className="text-gray-800 dark:text-gray-400 text-sm my-4">
         Create new users, customize user permissions, and remove users from your
-        account.{" "}
+        account.{' '}
         <Link
           className="font-bold text-blue-600"
           href={`/settings/${userId}/account-settings/users-and-teams`}
@@ -300,7 +271,7 @@ export default function Users({ userId }: PropForm) {
                 type="text"
                 value={searchTerm}
                 onInput={(e) => {
-                  setSearchTerm(e.currentTarget.value);
+                  setSearchTerm(e.currentTarget.value)
                 }}
                 placeholder="Chercher une utilisateur"
                 required={true}
@@ -316,7 +287,7 @@ export default function Users({ userId }: PropForm) {
                 <Dropdown
                   label={
                     <span className="text-blue-600 text-sm font-medium flex">
-                      {getFilters("Status")} {arrowDown}
+                      {getFilters('Status')} {arrowDown}
                     </span>
                   }
                   inline={true}
@@ -324,26 +295,26 @@ export default function Users({ userId }: PropForm) {
                   placement="bottom-end"
                   className="w-40"
                 >
-                  <Dropdown.Item onClick={() => handleFilter("Status", "All")}>
+                  <Dropdown.Item onClick={() => handleFilter('Status', 'All')}>
                     All
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Status", "Active")}
+                    onClick={() => handleFilter('Status', 'Active')}
                   >
                     Active
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Status", "Pending")}
+                    onClick={() => handleFilter('Status', 'Pending')}
                   >
                     Pending
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Status", "Uninvited")}
+                    onClick={() => handleFilter('Status', 'Uninvited')}
                   >
                     Uninvited
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Status", "Deactivate")}
+                    onClick={() => handleFilter('Status', 'Deactivate')}
                   >
                     Deactivate
                   </Dropdown.Item>
@@ -356,7 +327,7 @@ export default function Users({ userId }: PropForm) {
                 <Dropdown
                   label={
                     <span className="text-blue-600 text-sm font-medium flex">
-                      {getFilters("Permission")} {arrowDown}
+                      {getFilters('Permission')} {arrowDown}
                     </span>
                   }
                   inline={true}
@@ -365,22 +336,22 @@ export default function Users({ userId }: PropForm) {
                   className="w-40"
                 >
                   <Dropdown.Item
-                    onClick={() => handleFilter("Permission", "All")}
+                    onClick={() => handleFilter('Permission', 'All')}
                   >
                     All
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Permission", "Settings")}
+                    onClick={() => handleFilter('Permission', 'Settings')}
                   >
                     Settings
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Permission", "Deactivate")}
+                    onClick={() => handleFilter('Permission', 'Deactivate')}
                   >
                     Earnings
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Permission", "Deactivate")}
+                    onClick={() => handleFilter('Permission', 'Deactivate')}
                   >
                     Sign out
                   </Dropdown.Item>
@@ -393,7 +364,7 @@ export default function Users({ userId }: PropForm) {
                 <Dropdown
                   label={
                     <span className="text-blue-600 text-sm font-medium flex">
-                      {getFilters("Partner")} {arrowDown}
+                      {getFilters('Partner')} {arrowDown}
                     </span>
                   }
                   inline={true}
@@ -401,16 +372,16 @@ export default function Users({ userId }: PropForm) {
                   placement="bottom-end"
                   className="w-40"
                 >
-                  <Dropdown.Item onClick={() => handleFilter("Partner", "All")}>
+                  <Dropdown.Item onClick={() => handleFilter('Partner', 'All')}>
                     All
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Partner", "Partner")}
+                    onClick={() => handleFilter('Partner', 'Partner')}
                   >
                     Partner users
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => handleFilter("Partner", "Non-Partner")}
+                    onClick={() => handleFilter('Partner', 'Non-Partner')}
                   >
                     Non-partner users
                   </Dropdown.Item>
@@ -448,7 +419,7 @@ export default function Users({ userId }: PropForm) {
                   <Button
                     color="gray"
                     onClick={() => {
-                      setOpenModalExportUsers(!openModalExportUsers);
+                      setOpenModalExportUsers(!openModalExportUsers)
                     }}
                   >
                     Annuler
@@ -469,90 +440,90 @@ export default function Users({ userId }: PropForm) {
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "firstname"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'firstname'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("firstname")}
+                onClick={() => handleOrderBy('firstname')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Name{" "}
-                  {toOrderBy === "firstname" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Name{' '}
+                  {toOrderBy === 'firstname' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "teams"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'teams'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("teams")}
+                onClick={() => handleOrderBy('teams')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Teams{" "}
-                  {toOrderBy === "teams" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Teams{' '}
+                  {toOrderBy === 'teams' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "access"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'access'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("access")}
+                onClick={() => handleOrderBy('access')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Access{" "}
-                  {toOrderBy === "access" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Access{' '}
+                  {toOrderBy === 'access' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "lastActive"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'lastActive'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("lastActive")}
+                onClick={() => handleOrderBy('lastActive')}
               >
                 <div className="flex">
                   <span className="flex w-full items-center gap-2">
-                    Last active{" "}
-                    {toOrderBy === "lastActive" ? (
-                      toOrderByStartWith === "asc" ? (
+                    Last active{' '}
+                    {toOrderBy === 'lastActive' ? (
+                      toOrderByStartWith === 'asc' ? (
                         <UilSortAmountUp />
                       ) : (
                         <UilSortAmountDown />
                       )
                     ) : (
-                      ""
+                      ''
                     )}
                   </span>
                   <Tooltip
@@ -589,11 +560,11 @@ export default function Users({ userId }: PropForm) {
                                       src={
                                         user.user.image
                                           ? user.user.image
-                                          : "/static/default-profile.jpg"
+                                          : '/static/default-profile.jpg'
                                       }
                                       alt={
                                         user.user.firstname +
-                                        " " +
+                                        ' ' +
                                         user.user.lastname
                                       }
                                     />
@@ -609,7 +580,7 @@ export default function Users({ userId }: PropForm) {
                                           )
                                         }
                                       >
-                                        {user.user.firstname}{" "}
+                                        {user.user.firstname}{' '}
                                         {user.user.lastname}
                                       </Button>
                                     </div>
@@ -617,11 +588,11 @@ export default function Users({ userId }: PropForm) {
                                       <span
                                         className={
                                           (user.status === 1
-                                            ? "bg-yellow-400"
+                                            ? 'bg-yellow-400'
                                             : user.status === 2
-                                              ? "bg-green-400"
-                                              : "bg-red-400") +
-                                          " block relative w-2 h-2 rounded-full mr-2"
+                                            ? 'bg-green-400'
+                                            : 'bg-red-400') +
+                                          ' block relative w-2 h-2 rounded-full mr-2'
                                         }
                                       ></span>
                                       <span className="font-normal w-full text-gray-500 truncate flex items-center text-ellipsis overflow-hidden">
@@ -638,9 +609,7 @@ export default function Users({ userId }: PropForm) {
                               color="dark"
                               size="xs"
                               onClick={() => {
-                                setOpenModalActionsUsers(
-                                  !openModalActionsUsers
-                                );
+                                setOpenModalActionsUsers(!openModalActionsUsers)
                               }}
                             >
                               Action {arrowDown}
@@ -649,25 +618,65 @@ export default function Users({ userId }: PropForm) {
                         </div>
                       </Table.Cell>
                       <Table.Cell className="align-middle break-words items-center py-4 px-6 text-gray-900 dark:text-white min-w-[200px]">
-                        <span>{user.teams ? user.teams : "-"}</span>
+                        <span>{user.teams ? user.teams : '-'}</span>
                       </Table.Cell>
                       <Table.Cell className="align-middle break-words items-center py-4 px-6 text-gray-900 dark:text-white min-w-[375px]">
                         <div className="flex flex-col">
                           <div>
                             <span className="font-medium text-sm">
-                              {user.PermissionSets.name && user.PermissionSets.name}
+                              {user.PermissionSets.name &&
+                                user.PermissionSets.name}
                             </span>
                           </div>
                           <div>
                             <ul className="flex flex-row gap-2">
-                              {user.PermissionSets.access.SuperAdmin && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[length:1px_60%] pl-2 last:pr-0">Super Admin</li>)}
-                              {(user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.SalesProfessional) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Sales Professional</li>)}
-                              {!user.PermissionSets.access.SuperAdmin && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-no-repeat  bg-[length:1px_60%] pl-2 last:pr-0">Contacts</li>)}
-                              {(!user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.Marketing) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Marketing</li>)}
-                              {(!user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.Sales) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Sales</li>)}
-                              {(!user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.Service) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Service</li>)}
-                              {(!user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.Reports) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Reports</li>)}
-                              {(!user.PermissionSets.access.SuperAdmin && user.PermissionSets.access.Account) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Account</li>)}
+                              {user.PermissionSets.access.SuperAdmin && (
+                                <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[length:1px_60%] pl-2 last:pr-0">
+                                  Super Admin
+                                </li>
+                              )}
+                              {user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access
+                                  .SalesProfessional && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Sales Professional
+                                  </li>
+                                )}
+                              {!user.PermissionSets.access.SuperAdmin && (
+                                <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-no-repeat  bg-[length:1px_60%] pl-2 last:pr-0">
+                                  Contacts
+                                </li>
+                              )}
+                              {!user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access.Marketing && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Marketing
+                                  </li>
+                                )}
+                              {!user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access.Sales && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Sales
+                                  </li>
+                                )}
+                              {!user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access.Service && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Service
+                                  </li>
+                                )}
+                              {!user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access.Reports && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Reports
+                                  </li>
+                                )}
+                              {!user.PermissionSets.access.SuperAdmin &&
+                                user.PermissionSets.access.Account && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Account
+                                  </li>
+                                )}
                             </ul>
                           </div>
                         </div>
@@ -723,9 +732,9 @@ export default function Users({ userId }: PropForm) {
                                     <span
                                       className={
                                         (i === 1
-                                          ? "bg-green-400"
-                                          : "bg-yellow-400") +
-                                        " block relative w-2 h-2 rounded-full mr-2"
+                                          ? 'bg-green-400'
+                                          : 'bg-yellow-400') +
+                                        ' block relative w-2 h-2 rounded-full mr-2'
                                       }
                                     ></span>
                                     <span className="font-normal w-full text-gray-500 truncate flex items-center text-ellipsis overflow-hidden">
@@ -777,11 +786,11 @@ export default function Users({ userId }: PropForm) {
                 aria-label="Table navigation"
               >
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  Showing{" "}
+                  Showing{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {usersList.pagination.from}-{usersList.pagination.to}
-                  </span>{" "}
-                  of{" "}
+                  </span>{' '}
+                  of{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {usersList.pagination.total}
                   </span>
@@ -791,8 +800,9 @@ export default function Users({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(usersList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/users`);
+                          setToSkip(usersList.pagination.currentPage - 1)
+                          //mutate(`/api/settings/account/users-and-teams/users`)
+                          refetchUsersList()
                         }}
                         className="block ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -817,8 +827,9 @@ export default function Users({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(1);
-                          mutate(`/api/settings/account/users-and-teams/users`);
+                          setToSkip(1)
+                          // mutate(`/api/settings/account/users-and-teams/users`)
+                          refetchUsersList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -837,8 +848,9 @@ export default function Users({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(usersList.pagination.currentPage - 3);
-                          mutate(`/api/settings/account/users-and-teams/users`);
+                          setToSkip(usersList.pagination.currentPage - 3)
+                          // mutate(`/api/settings/account/users-and-teams/users`)
+                          refetchUsersList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -850,8 +862,9 @@ export default function Users({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(usersList.pagination.currentPage - 2);
-                          mutate(`/api/settings/account/users-and-teams/users`);
+                          setToSkip(usersList.pagination.currentPage - 2)
+                          // mutate(`/api/settings/account/users-and-teams/users`)
+                          refetchUsersList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -863,8 +876,9 @@ export default function Users({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(usersList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/users`);
+                          setToSkip(usersList.pagination.currentPage - 1)
+                          // mutate(`/api/settings/account/users-and-teams/users`)
+                          refetchUsersList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -877,23 +891,23 @@ export default function Users({ userId }: PropForm) {
                       aria-current="page"
                       className={
                         (usersList.pagination.currentPage === 1 &&
-                          usersList.pagination.currentPage ===
+                        usersList.pagination.currentPage ===
                           usersList.pagination.pageCount
-                          ? "rounded-md "
+                          ? 'rounded-md '
                           : usersList.pagination.currentPage === 1 &&
                             usersList.pagination.currentPage <
-                            usersList.pagination.pageCount
-                            ? "rounded-l-md"
-                            : usersList.pagination.currentPage > 1 &&
-                              usersList.pagination.currentPage <
                               usersList.pagination.pageCount
-                              ? "rounded-none"
-                              : usersList.pagination.currentPage > 1 &&
-                                usersList.pagination.currentPage ===
-                                usersList.pagination.pageCount
-                                ? "rounded-r-md"
-                                : "rounded-none") +
-                        " p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+                          ? 'rounded-l-md'
+                          : usersList.pagination.currentPage > 1 &&
+                            usersList.pagination.currentPage <
+                              usersList.pagination.pageCount
+                          ? 'rounded-none'
+                          : usersList.pagination.currentPage > 1 &&
+                            usersList.pagination.currentPage ===
+                              usersList.pagination.pageCount
+                          ? 'rounded-r-md'
+                          : 'rounded-none') +
+                        ' p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
                       }
                     >
                       {usersList.pagination.currentPage}
@@ -901,14 +915,15 @@ export default function Users({ userId }: PropForm) {
                   </li>
                   {usersList.pagination.currentPage > 1 &&
                     usersList.pagination.pageCount >
-                    usersList.pagination.currentPage && (
+                      usersList.pagination.currentPage && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(usersList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/users`
-                            );
+                            setToSkip(usersList.pagination.currentPage + 1)
+                            // mutate(
+                            //   `/api/settings/account/users-and-teams/users`
+                            // )
+                            refetchUsersList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -918,14 +933,15 @@ export default function Users({ userId }: PropForm) {
                     )}
                   {usersList.pagination.currentPage > 1 &&
                     usersList.pagination.pageCount >
-                    usersList.pagination.currentPage + 1 && (
+                      usersList.pagination.currentPage + 1 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(usersList.pagination.currentPage + 2);
-                            mutate(
-                              `/api/settings/account/users-and-teams/users`
-                            );
+                            setToSkip(usersList.pagination.currentPage + 2)
+                            // mutate(
+                            //   `/api/settings/account/users-and-teams/users`
+                            // )
+                            refetchUsersList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -935,7 +951,7 @@ export default function Users({ userId }: PropForm) {
                     )}
                   {usersList.pagination.currentPage > 1 &&
                     usersList.pagination.pageCount >
-                    usersList.pagination.currentPage + 2 && (
+                      usersList.pagination.currentPage + 2 && (
                       <li>
                         <Button className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                           ...
@@ -946,14 +962,15 @@ export default function Users({ userId }: PropForm) {
                   {usersList.pagination.currentPage !==
                     usersList.pagination.pageCount &&
                     usersList.pagination.pageCount >
-                    usersList.pagination.currentPage + 2 && (
+                      usersList.pagination.currentPage + 2 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(usersList.pagination.pageCount);
-                            mutate(
-                              `/api/settings/account/users-and-teams/users`
-                            );
+                            setToSkip(usersList.pagination.pageCount)
+                            // mutate(
+                            //   `/api/settings/account/users-and-teams/users`
+                            // )
+                            refetchUsersList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -965,14 +982,15 @@ export default function Users({ userId }: PropForm) {
                   {usersList.pagination.currentPage !==
                     usersList.pagination.pageCount &&
                     usersList.pagination.pageCount >
-                    usersList.pagination.currentPage + 1 && (
+                      usersList.pagination.currentPage + 1 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(usersList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/users`
-                            );
+                            setToSkip(usersList.pagination.currentPage + 1)
+                            // mutate(
+                            //   `/api/settings/account/users-and-teams/users`
+                            // )
+                            refetchUsersList()
                           }}
                           className="block p-0 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -1125,5 +1143,5 @@ export default function Users({ userId }: PropForm) {
         </div>
       </div>
     </>
-  );
+  )
 }

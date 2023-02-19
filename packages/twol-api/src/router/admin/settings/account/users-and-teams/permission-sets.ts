@@ -180,8 +180,8 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
       .input(
         z.object({
           userId: z.string(),
-          toSkip: z.string(),
-          toTake: z.string(),
+          toSkip: z.number(),
+          toTake: z.number(),
           searchTerm: z.string(),
           toOrderBy: z.string(),
           toOrderByStartWith: z.string(),
@@ -387,7 +387,7 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
                   })
                 }
 
-                const response = {
+                const responses = {
                   data: dataToSend,
                   pagination: {
                     total: permissionSetsCount,
@@ -399,7 +399,7 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
                   },
                 }
 
-                return response
+                return responses
               } else {
                 throw new TRPCError({
                   code: 'INTERNAL_SERVER_ERROR',
@@ -460,11 +460,11 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
             //cause: theError,
           })
         }
-        if (!Array.isArray(input.id)) {
+        if (Array.isArray(input.id)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message:
-              'Mauvaise requête. Le paramètre emails doit être un tableau.',
+              'Mauvaise requête. Le paramètre id ne doit pas être un tableau.',
             // optional: pass the original error to retain stack trace
             //cause: theError,
           })
@@ -974,7 +974,7 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
           permissionSetId: z.string(),
         })
       )
-      .query(async ({ ctx, input }) => {
+      .mutation(async ({ ctx, input }) => {
         if (Array.isArray(input.userId)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
@@ -984,11 +984,11 @@ export const adminSettingsAccountUsersAndTeamsPermissionSetsRouter =
             //cause: theError,
           })
         }
-        if (!Array.isArray(input.permissionSetId)) {
+        if (Array.isArray(input.permissionSetId)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message:
-              'Mauvaise requête. Le paramètre emails doit être un tableau.',
+              'Mauvaise requête. Le paramètre permissionSetId ne doit pas être un tableau.',
             // optional: pass the original error to retain stack trace
             //cause: theError,
           })

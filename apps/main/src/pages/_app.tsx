@@ -71,11 +71,15 @@ import type { ReactElement, ReactNode } from 'react'
 // import type { LayoutProps } from '@vercel/examples-ui/layout'
 // import { getLayout } from '@vercel/examples-ui'
 // import '@vercel/examples-ui/globals.css'
-import { api } from '../lib/utils/api'
+import { api } from '@lib/utils/api'
 import { Analytics } from '@vercel/analytics/react';
+
+// export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+//   getNestedLayout?: (page: ReactElement) => ReactNode
+// }
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
-  getNestedLayout?: (page: ReactElement) => ReactNode
-}
+  getLayout?: (page: ReactElement) => ReactNode;
+};
 
 type AppPropsWithLayout = AppProps<{ session: Session }> & {
   Component: NextPageWithLayout
@@ -86,17 +90,21 @@ const App = ({
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
   // Use the layout defined at the page level, if available
-  const getNestedLayout = Component.getNestedLayout ?? ((page) => page)
   // const Layout = getLayout<LayoutProps>(Component)
+
+  // const getNestedLayout = Component.getNestedLayout ?? ((page) => page)
+  const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
     <PlausibleProvider domain="t-wol.com">
       <SessionProvider session={session}>
         <AppLoggedInProvider>
           <Flowbite>
-            {
-            
-            getNestedLayout(
+            {getLayout(<>
+                <Component {...pageProps} />
+                <Analytics />
+              </>)}
+            {/* {getNestedLayout(
               // <Layout title="Microfrontends" path="solutions/microfrontends">
               //   <Component {...pageProps} />
               //   <Analytics />
@@ -105,7 +113,7 @@ const App = ({
                 <Component {...pageProps} />
                 <Analytics />
               </>
-            )}
+            )} */}
           </Flowbite>
         </AppLoggedInProvider>
       </SessionProvider>

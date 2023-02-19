@@ -26,8 +26,8 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        toSkip: z.string(),
-        toTake: z.string(),
+        toSkip: z.number(),
+        toTake: z.number(),
         searchTerm: z.string(),
         toOrderBy: z.string(),
         toOrderByStartWith: z.string(),
@@ -190,7 +190,7 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
                 ...OrderBySet,
               })
 
-              const response = {
+              const responses = {
                 data: teams,
                 pagination: {
                   total: teamsCount,
@@ -202,7 +202,7 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
                 },
               }
 
-              return response
+              return responses
             } else {
               throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
@@ -263,11 +263,11 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
           //cause: theError,
         })
       }
-      if (!Array.isArray(input.id)) {
+      if (Array.isArray(input.id)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message:
-            'Mauvaise requête. Le paramètre emails doit être un tableau.',
+            'Mauvaise requête. Le paramètre id ne doit pas être un tableau.',
           // optional: pass the original error to retain stack trace
           //cause: theError,
         })
@@ -385,7 +385,7 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        id: z.string(),
+        id: z.string().nullable(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -398,11 +398,11 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
           //cause: theError,
         })
       }
-      if (!Array.isArray(input.id)) {
+      if (Array.isArray(input.id)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message:
-            'Mauvaise requête. Le paramètre emails doit être un tableau.',
+            'Mauvaise requête. Le paramètre id ne doit pas être un tableau.',
           // optional: pass the original error to retain stack trace
           //cause: theError,
         })
@@ -441,78 +441,119 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
               },
             },
           })
+
           if (fetchOngId && fetchOngId.B2E[0] !== undefined) {
             if (fetchOngId.B2E[0].ongId) {
               // if update get the selected teams settings
-              const team = await ctx.prisma.teams.findMany({
-                where: {
-                  ongId: fetchOngId.B2E[0].ongId,
-                  id: input.id,
-                },
-                select: {
-                  name: true,
-                  parentTeam: {
-                    select: {
-                      name: true,
-                      id: true,
-                    },
+              if (input.id !== null) {
+                const team = await ctx.prisma.teams.findMany({
+                  where: {
+                    ongId: fetchOngId.B2E[0].ongId,
+                    id: input.id,
                   },
-                  B2E: {
-                    select: {
-                      id: true,
-                      user: {
-                        select: {
-                          firstname: true,
-                          lastname: true,
-                          email: true,
+                  select: {
+                    name: true,
+                    parentTeam: {
+                      select: {
+                        name: true,
+                        id: true,
+                      },
+                    },
+                    B2E: {
+                      select: {
+                        id: true,
+                        user: {
+                          select: {
+                            firstname: true,
+                            lastname: true,
+                            email: true,
+                          },
                         },
                       },
                     },
                   },
-                },
-              })
+                })
 
-              // get Teams from this account
-              const teams = await ctx.prisma.teams.findMany({
-                where: {
-                  ongId: fetchOngId.B2E[0].ongId,
-                  NOT: {
-                    id: input.id,
-                  },
-                },
-                select: {
-                  id: true,
-                  name: true,
-                  parentTeamId: true,
-                },
-              })
-
-              // get Users from this account
-              const users = await ctx.prisma.b2E.findMany({
-                where: {
-                  ongId: fetchOngId.B2E[0].ongId,
-                },
-                select: {
-                  id: true,
-                  teamsId: true,
-                  user: {
-                    select: {
-                      firstname: true,
-                      lastname: true,
-                      email: true,
+                // get Teams from this account
+                const teams = await ctx.prisma.teams.findMany({
+                  where: {
+                    ongId: fetchOngId.B2E[0].ongId,
+                    NOT: {
+                      id: input.id,
                     },
                   },
-                },
-              })
+                  select: {
+                    id: true,
+                    name: true,
+                    parentTeamId: true,
+                  },
+                })
 
-              // constuct response
-              const response = {
-                team: team,
-                teams: teams,
-                users: users,
+                // get Users from this account
+                const users = await ctx.prisma.b2E.findMany({
+                  where: {
+                    ongId: fetchOngId.B2E[0].ongId,
+                  },
+                  select: {
+                    id: true,
+                    teamsId: true,
+                    user: {
+                      select: {
+                        firstname: true,
+                        lastname: true,
+                        email: true,
+                      },
+                    },
+                  },
+                })
+                // constuct response
+                const response = {
+                  team: team,
+                  teams: teams,
+                  users: users,
+                }
+                return response
+              } else {
+
+
+                // get Teams from this account
+                const teams = await ctx.prisma.teams.findMany({
+                  where: {
+                    ongId: fetchOngId.B2E[0].ongId,
+                  },
+                  select: {
+                    id: true,
+                    name: true,
+                    parentTeamId: true,
+                  },
+                })
+
+                // get Users from this account
+                const users = await ctx.prisma.b2E.findMany({
+                  where: {
+                    ongId: fetchOngId.B2E[0].ongId,
+                  },
+                  select: {
+                    id: true,
+                    teamsId: true,
+                    user: {
+                      select: {
+                        firstname: true,
+                        lastname: true,
+                        email: true,
+                      },
+                    },
+                  },
+                })
+                // constuct response
+                const response = {
+                  team: null,
+                  teams: teams,
+                  users: users,
+                }
+
+                return response
               }
-
-              return response
             } else {
               throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
@@ -566,7 +607,7 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         parentTeamId: z.string(),
-        users: z.object({ id: z.string() }),
+        users: z.array(z.object({ id: z.string() })),
         userId: z.string(),
       })
     )
@@ -827,7 +868,7 @@ export const adminSettingsAccountUsersAndTeamsTeamsRouter = createTRPCRouter({
         id: z.string(),
         name: z.string(),
         parentTeamId: z.string(),
-        users: z.object({ id: z.string() }),
+        users: z.array(z.object({ id: z.string() })),
         userId: z.string(),
       })
     )

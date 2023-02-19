@@ -4,6 +4,8 @@ import { signIn, signOut } from "next-auth/react";
 import { api, type RouterOutputs } from "@lib/utils/api";
 
 const Home: NextPage = () => {
+  
+  const { data: message } = api.auth.getMessage.useQuery(    undefined,  );
   return (
     <>
       <Head>
@@ -13,7 +15,7 @@ const Home: NextPage = () => {
       </Head>
       <main>
         <div>
-          <h1>TWOL tRPC Turbo</h1>
+          <h1>TWOL tRPC Turbo -&gt; {message}</h1>
           <AuthShowcase />
         </div>
       </main>

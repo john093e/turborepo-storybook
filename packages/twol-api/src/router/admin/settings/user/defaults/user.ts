@@ -84,8 +84,17 @@ export const adminSettingsUserDefaultsUserRouter = createTRPCRouter({
               },
             },
           })
-
-          return settings
+          if(settings && settings.B2E[0] !== undefined){
+            return settings
+          }else {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message:
+                'An unexpected error occurred, server failed to get user ID, please try again later.',
+              // optional: pass the original error to retain stack trace
+              // cause: error,
+            })
+          }
         } else {
           throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -126,14 +135,14 @@ export const adminSettingsUserDefaultsUserRouter = createTRPCRouter({
         dateFormat: z.string(),
         defaultHomepage: z.string(),
         firstname: z.string(),
-        image: z.string(),
+        image: z.string().nullable(),
         language: z.string(),
         lastname: z.string(),
-        phone: z.string(),
-        phonePrefix: z.string(),
+        phone: z.string().nullable(),
+        phonePrefix: z.string().nullable(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (!ctx.session.user.id) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -180,7 +189,16 @@ export const adminSettingsUserDefaultsUserRouter = createTRPCRouter({
             },
           },
         })
-        return response
+        if(response){
+          return
+        }else{
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred, please try again later.',
+            // optional: pass the original error to retain stack trace
+            // cause: error,
+          })
+        }
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

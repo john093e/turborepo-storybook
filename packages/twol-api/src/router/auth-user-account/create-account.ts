@@ -28,8 +28,10 @@ export const createAccountRouter = createTRPCRouter({
    * -
    */
   checkCharityIsAvailable: publicProcedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
+    .input(z.object({
+      charityNumber: z.string()
+    }))
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -40,8 +42,8 @@ export const createAccountRouter = createTRPCRouter({
         })
       }
       try {
-        if (input && input.length !== 0) {
-          const cNumber = (input as string).replace(/\D/g, '')
+        if (input.charityNumber && input.charityNumber.length !== 0) {
+          const cNumber = (input.charityNumber as string).replace(/\D/g, '')
 
           const data = await ctx.prisma.oNG.findUnique({
             where: {
@@ -54,13 +56,15 @@ export const createAccountRouter = createTRPCRouter({
           })
 
           if (data === null && cNumber.length !== 0) {
-            return {
-              checkCharityIsAvailable: 'unknown',
-            }
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message:
+                "Mauvaise requête. Cette ONG ne nous est pas connu.",
+              // optional: pass the original error to retain stack trace
+              //cause: theError,
+            })
           } else if (data !== null) {
-            return {
-              checkCharityIsAvailable: data,
-            }
+            return  data
           } else {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
@@ -96,8 +100,10 @@ export const createAccountRouter = createTRPCRouter({
    * -
    */
   checkUserAlreadyExist: publicProcedure
-    .input(z.string())
-    .query(async ({ ctx, input }) => {
+    .input(z.object({
+      userEmail: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -108,9 +114,9 @@ export const createAccountRouter = createTRPCRouter({
         })
       }
       try {
-        if (input && input.length !== 0) {
+        if (input.userEmail && input.userEmail.length !== 0) {
           //validate Email
-          if (!/^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/i.test(input)) {
+          if (!/^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/i.test(input.userEmail)) {
             throw new TRPCError({
               code: 'BAD_REQUEST',
               message: 'Mauvaise requête. Le paramètre email est invalid.',
@@ -118,7 +124,7 @@ export const createAccountRouter = createTRPCRouter({
               //cause: theError,
             })
           }
-          const uEmail = input as string
+          const uEmail = input.userEmail as string
 
           const data = await ctx.prisma.user.findUnique({
             where: {
@@ -133,9 +139,7 @@ export const createAccountRouter = createTRPCRouter({
           })
 
           if (data === null && uEmail.length !== 0) {
-            return {
-              checkUserAlreadyExist: 'unknown',
-            }
+            return 'unknown'
           } else if (data !== null) {
             let passwordSet: boolean = false,
               firstnameSet: boolean = false,
@@ -151,15 +155,13 @@ export const createAccountRouter = createTRPCRouter({
               lastnameSet = true
             }
             marketingAccept = data.marketingAccept
-            const available: {} = {
+            const available = {
               passwordSet,
               firstnameSet,
               lastnameSet,
               marketingAccept,
             }
-            return {
-              checkUserAlreadyExist: available,
-            }
+            return available
           } else {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
@@ -203,7 +205,7 @@ export const createAccountRouter = createTRPCRouter({
         userPassContent: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.userEmail)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -404,8 +406,8 @@ export const createAccountRouter = createTRPCRouter({
     .input(
       z.object({
         charityNumber: z.string(),
-        firstName: z.string(),
-        lastName: z.string(),
+        firstName: z.string().nullable(),
+        lastName: z.string().nullable(),
         language: z.string(),
         email: z.string(),
         passwordIv: z.string(),
@@ -1483,7 +1485,7 @@ export const createAccountRouter = createTRPCRouter({
                     },
                   },
                 })
-                return responseONG
+                return "allGood"
               } else {
                 // Stop the process the user creation had an issue
                 throw new TRPCError({

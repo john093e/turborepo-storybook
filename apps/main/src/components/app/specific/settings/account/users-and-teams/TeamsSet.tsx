@@ -1,9 +1,8 @@
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic'
 
-import { useRouter } from "next/router";
-import useSWR, { mutate } from "swr";
-import { useContext, useState, useEffect } from "react";
-import { useDebounce } from "use-debounce";
+import { useRouter } from 'next/router'
+import { useContext, useState, useEffect } from 'react'
+import { useDebounce } from 'use-debounce'
 
 import {
   Button,
@@ -12,120 +11,106 @@ import {
   Table,
   TextInput,
   ToggleSwitch,
-} from "flowbite-react";
+} from 'flowbite-react'
 
 import {
   UilSearchAlt,
   UilSortAmountDown,
   UilSortAmountUp,
-} from "@iconscout/react-unicons";
+} from '@iconscout/react-unicons'
 
 const TeamsDrawer = dynamic(
   () =>
     import(
-      "@components/app/specific/settings/account/users-and-teams/TeamsDrawer"
+      '@components/app/specific/settings/account/users-and-teams/TeamsDrawer'
     ),
   {
     ssr: false,
   }
-);
+)
 const TeamsDeleteModal = dynamic(
   () =>
     import(
-      "@components/app/specific/settings/account/users-and-teams/TeamsDeleteModal"
+      '@components/app/specific/settings/account/users-and-teams/TeamsDeleteModal'
     ),
   {
     ssr: false,
   }
-);
+)
 
-import { fetcher } from "@lib/fetcher";
+import { AppLoggedInContext } from '@contexts/AppLoggedInContext'
 
-import { Teams } from "@prisma/client";
-
-import { AppLoggedInContext } from "@contexts/AppLoggedInContext";
-import { AppLoggedInContextType } from "@types/appLoggedInContext";
-
-interface AccountTeams extends Pick<Teams, "id" | "name"> {
-  _count: {
-    childTeam: number;
-    B2E: number;
-  };
-}
-
-interface AccountTeamsList {
-  data: Array<AccountTeams>;
-  pagination: {
-    total: number;
-    pageCount: number;
-    currentPage: number;
-    perPage: number;
-    from: number;
-    to: number;
-  };
-}
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PropForm {
-  userId: string;
+  userId: string
 }
 export default function TeamsSet({ userId }: PropForm) {
-  const router = useRouter();
+  const router = useRouter()
 
   // pagination table
-  const [toTake, setToTake] = useState(25);
-  const [toSkip, setToSkip] = useState(1);
+  const [toTake, setToTake] = useState(25)
+  const [toSkip, setToSkip] = useState(1)
   // search user
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500)
   // pagination table
-  const [toOrderBy, setToOrderBy] = useState("");
-  const [toOrderByStartWith, setToOrderByStartWith] = useState("");
+  const [toOrderBy, setToOrderBy] = useState('')
+  const [toOrderByStartWith, setToOrderByStartWith] = useState('')
 
   // get all teams from this account
-  const { data: teamsList } = useSWR<AccountTeamsList>(
-    userId &&
-      `/api/settings/account/users-and-teams/teams?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`,
-    fetcher,
+  const {
+    data: teamsList,
+    isLoading: isLoadingTeamsList,
+    refetch: refetchTeamsList,
+  } = api.adminSettingsAccountUsersAndTeamsTeams.getTeamsSettings.useQuery(
     {
-      onError: () => router.push("/"),
-      revalidateOnFocus: false, // on come back to page
-      revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
-      revalidateIfStale: true, //if data stale retry
+      userId: userId,
+      toTake: toTake,
+      toSkip: toSkip,
+      searchTerm: debouncedSearchTerm,
+      toOrderBy: toOrderBy,
+      toOrderByStartWith: toOrderByStartWith,
+    },
+    {
+      retry: 1,
+      onError: () => router.push('/'),
+      refetchOnWindowFocus: true, // on come back to page
+      refetchInterval: false, // ?
+      refetchIntervalInBackground: false, // ?
+      refetchOnReconnect: true, // computer come out of standby (reconnect to web)
     }
-  );
+  )
 
   useEffect(() => {
     if (debouncedSearchTerm !== null || debouncedSearchTerm !== undefined) {
-      setToTake(25);
-      setToSkip(1);
-      setToOrderBy("");
-      setToOrderByStartWith("");
-      mutate(`/api/settings/account/users-and-teams/teams`);
+      setToTake(25)
+      setToSkip(1)
+      setToOrderBy('')
+      setToOrderByStartWith('')
+      refetchTeamsList()
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm])
 
   // Handle Order By
   const handleOrderBy = (categoryName: string) => {
-    if (toOrderBy === "") {
-      setToOrderBy(categoryName);
-      setToOrderByStartWith("asc");
+    if (toOrderBy === '') {
+      setToOrderBy(categoryName)
+      setToOrderByStartWith('asc')
     } else {
       if (toOrderBy !== categoryName) {
-        setToOrderBy(categoryName);
-        setToOrderByStartWith("asc");
+        setToOrderBy(categoryName)
+        setToOrderByStartWith('asc')
       } else {
-        if (toOrderByStartWith === "asc") {
-          setToOrderByStartWith("desc");
+        if (toOrderByStartWith === 'asc') {
+          setToOrderByStartWith('desc')
         } else {
-          setToOrderBy("");
-          setToOrderByStartWith("");
+          setToOrderBy('')
+          setToOrderByStartWith('')
         }
       }
     }
-    mutate(
-      `/api/settings/account/users-and-teams/teams?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+  }
 
   // Just an arrow
   const arrowDown = (
@@ -146,17 +131,15 @@ export default function TeamsSet({ userId }: PropForm) {
         d="M19 9l-7 7-7-7"
       ></path>
     </svg>
-  );
+  )
 
   const { setRootDrawer, resetRootDrawer, setRootModal, resetRootModal } =
-    useContext(AppLoggedInContext) as AppLoggedInContextType;
+    useContext(AppLoggedInContext)
 
   const finishProcessDrawer = () => {
-    resetRootDrawer();
-    mutate(
-      `/api/settings/account/users-and-teams/teams?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+    resetRootDrawer()
+    refetchTeamsList()
+  }
   //Create a Team
   const handleCreateNewUser = () => {
     setRootDrawer(
@@ -166,8 +149,8 @@ export default function TeamsSet({ userId }: PropForm) {
         userId={userId}
         id={null}
       />
-    );
-  };
+    )
+  }
 
   // Edit a Team
   const handleEditTeam = (id: string) => {
@@ -178,14 +161,12 @@ export default function TeamsSet({ userId }: PropForm) {
         userId={userId}
         id={id}
       />
-    );
-  };
+    )
+  }
   const finishProcessModal = () => {
-    resetRootModal();
-    mutate(
-      `/api/settings/account/users-and-teams/teams?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+    resetRootModal()
+    refetchTeamsList()
+  }
 
   //Delete a Team
   const handleDeleteTeam = (name: string, id: string) => {
@@ -197,8 +178,8 @@ export default function TeamsSet({ userId }: PropForm) {
         id={id}
         userId={userId}
       />
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -222,7 +203,7 @@ export default function TeamsSet({ userId }: PropForm) {
             <ToggleSwitch
               checked={true}
               label=""
-              onChange={() => console.log("toogle")}
+              onChange={() => console.log('toogle')}
             />
           </div>
         </div>
@@ -244,7 +225,7 @@ export default function TeamsSet({ userId }: PropForm) {
                 type="text"
                 value={searchTerm}
                 onInput={(e) => {
-                  setSearchTerm(e.currentTarget.value);
+                  setSearchTerm(e.currentTarget.value)
                 }}
                 placeholder="Chercher une team"
                 required={true}
@@ -268,67 +249,67 @@ export default function TeamsSet({ userId }: PropForm) {
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "name"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'name'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("name")}
+                onClick={() => handleOrderBy('name')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Name{" "}
-                  {toOrderBy === "name" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Name{' '}
+                  {toOrderBy === 'name' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "child-teams"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'child-teams'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("child-teams")}
+                onClick={() => handleOrderBy('child-teams')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Child teams{" "}
-                  {toOrderBy === "child-teams" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Child teams{' '}
+                  {toOrderBy === 'child-teams' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "users"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'users'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("users")}
+                onClick={() => handleOrderBy('users')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Users{" "}
-                  {toOrderBy === "users" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Users{' '}
+                  {toOrderBy === 'users' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
@@ -446,11 +427,11 @@ export default function TeamsSet({ userId }: PropForm) {
                 aria-label="Table navigation"
               >
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  Showing{" "}
+                  Showing{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {teamsList.pagination.from}-{teamsList.pagination.to}
-                  </span>{" "}
-                  of{" "}
+                  </span>{' '}
+                  of{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {teamsList.pagination.total}
                   </span>
@@ -460,8 +441,8 @@ export default function TeamsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(teamsList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/teams`);
+                          setToSkip(teamsList.pagination.currentPage - 1)
+                          refetchTeamsList()
                         }}
                         className="block ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -486,8 +467,8 @@ export default function TeamsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(1);
-                          mutate(`/api/settings/account/users-and-teams/teams`);
+                          setToSkip(1)
+                          refetchTeamsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -506,8 +487,8 @@ export default function TeamsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(teamsList.pagination.currentPage - 3);
-                          mutate(`/api/settings/account/users-and-teams/teams`);
+                          setToSkip(teamsList.pagination.currentPage - 3)
+                          refetchTeamsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -519,8 +500,8 @@ export default function TeamsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(teamsList.pagination.currentPage - 2);
-                          mutate(`/api/settings/account/users-and-teams/teams`);
+                          setToSkip(teamsList.pagination.currentPage - 2)
+                          refetchTeamsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -532,8 +513,8 @@ export default function TeamsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(teamsList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/teams`);
+                          setToSkip(teamsList.pagination.currentPage - 1)
+                          refetchTeamsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -548,21 +529,21 @@ export default function TeamsSet({ userId }: PropForm) {
                         (teamsList.pagination.currentPage === 1 &&
                         teamsList.pagination.currentPage ===
                           teamsList.pagination.pageCount
-                          ? "rounded-md "
+                          ? 'rounded-md '
                           : teamsList.pagination.currentPage === 1 &&
                             teamsList.pagination.currentPage <
                               teamsList.pagination.pageCount
-                          ? "rounded-l-md"
+                          ? 'rounded-l-md'
                           : teamsList.pagination.currentPage > 1 &&
                             teamsList.pagination.currentPage <
                               teamsList.pagination.pageCount
-                          ? "rounded-none"
+                          ? 'rounded-none'
                           : teamsList.pagination.currentPage > 1 &&
                             teamsList.pagination.currentPage ===
                               teamsList.pagination.pageCount
-                          ? "rounded-r-md"
-                          : "rounded-none") +
-                        " p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+                          ? 'rounded-r-md'
+                          : 'rounded-none') +
+                        ' p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
                       }
                     >
                       {teamsList.pagination.currentPage}
@@ -574,10 +555,8 @@ export default function TeamsSet({ userId }: PropForm) {
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(teamsList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/teams`
-                            );
+                            setToSkip(teamsList.pagination.currentPage + 1)
+                            refetchTeamsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -591,10 +570,8 @@ export default function TeamsSet({ userId }: PropForm) {
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(teamsList.pagination.currentPage + 2);
-                            mutate(
-                              `/api/settings/account/users-and-teams/teams`
-                            );
+                            setToSkip(teamsList.pagination.currentPage + 2)
+                            refetchTeamsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -619,10 +596,8 @@ export default function TeamsSet({ userId }: PropForm) {
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(teamsList.pagination.pageCount);
-                            mutate(
-                              `/api/settings/account/users-and-teams/teams`
-                            );
+                            setToSkip(teamsList.pagination.pageCount)
+                            refetchTeamsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -638,10 +613,8 @@ export default function TeamsSet({ userId }: PropForm) {
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(teamsList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/teams`
-                            );
+                            setToSkip(teamsList.pagination.currentPage + 1)
+                            refetchTeamsList()
                           }}
                           className="block p-0 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -669,5 +642,5 @@ export default function TeamsSet({ userId }: PropForm) {
         </div>
       </div>
     </>
-  );
+  )
 }

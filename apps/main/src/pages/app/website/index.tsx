@@ -14,6 +14,8 @@ import { HttpMethod } from "@types";
 import type { FormEvent } from "react";
 import type { Site } from "@prisma/client";
 
+// import { api, type RouterOutputs } from '@lib/utils/api'
+
 export default function AppIndex() {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [creatingSite, setCreatingSite] = useState<boolean>(false);
@@ -24,6 +26,7 @@ export default function AppIndex() {
   const siteNameRef = useRef<HTMLInputElement | null>(null);
   const siteSubdomainRef = useRef<HTMLInputElement | null>(null);
   const siteDescriptionRef = useRef<HTMLTextAreaElement | null>(null);
+
 
   useEffect(() => {
     async function checkSubDomain() {

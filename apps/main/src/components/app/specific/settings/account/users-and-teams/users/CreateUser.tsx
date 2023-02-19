@@ -1,8 +1,8 @@
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 
-import Select from "@components/common/forms/select/Select";
+import Select from '@components/common/forms/select/Select'
 import {
   Accordion,
   Badge,
@@ -13,7 +13,7 @@ import {
   Timeline,
   TextInput,
   Tooltip,
-} from "flowbite-react";
+} from 'flowbite-react'
 
 import {
   UilAt,
@@ -22,38 +22,41 @@ import {
   UilLinkAlt,
   UilMessage,
   UilPadlock,
-} from "@iconscout/react-unicons";
+} from '@iconscout/react-unicons'
+import toast from 'react-hot-toast'
 
-import useSWR, { mutate } from "swr";
-import { fetcher } from "@lib/fetcher";
-import { HttpMethod } from "@types";
+import useSWR, { mutate } from 'swr'
+import { fetcher } from '@lib/fetcher'
+import { HttpMethod } from '@types'
+
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 type NewUserFormValues = {
-  email: string;
-};
+  email: string
+}
 type NewUserAddedFormValues = {
-  id?: string;
-  email: string;
-  link: string;
-};
+  id?: string
+  email: string
+  link: string
+}
 interface PropForm {
-  userId: string;
-  closeProcess: () => void;
-  finishProcess: () => void;
+  userId: string
+  closeProcess: () => void
+  finishProcess: () => void
 }
 export default function CreateUser({
   userId,
   closeProcess,
   finishProcess,
 }: PropForm) {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [createUserStep, setCreateUserStep] = useState<number>(1);
-  const [displayFormOne, setDisplayFormOne] = useState<boolean>(true);
-  const [displayFormTwo, setDisplayFormTwo] = useState<boolean>(false);
-  const [displayFormThree, setDisplayFormThree] = useState<boolean>(false);
-  const [displayFormFour, setDisplayFormFour] = useState<boolean>(false);
-  const [savingNewUser, setSavingNewUser] = useState<boolean>(false);
+  const [createUserStep, setCreateUserStep] = useState<number>(1)
+  const [displayFormOne, setDisplayFormOne] = useState<boolean>(true)
+  const [displayFormTwo, setDisplayFormTwo] = useState<boolean>(false)
+  const [displayFormThree, setDisplayFormThree] = useState<boolean>(false)
+  const [displayFormFour, setDisplayFormFour] = useState<boolean>(false)
+  const [savingNewUser, setSavingNewUser] = useState<boolean>(false)
   // Form
   const {
     register: registerNewUser,
@@ -64,297 +67,303 @@ export default function CreateUser({
     watch: watchNewUser,
   } = useForm<NewUserFormValues>({
     defaultValues: {
-      email: "",
+      email: '',
     },
-  });
+  })
 
   // Step 1 Email
-  const [newUserEmailItems, setNewUserEmailItems] = useState<Array<string>>([]);
-  const [newUserEmailValue, setNewUserEmailValue] = useState("");
+  const [newUserEmailItems, setNewUserEmailItems] = useState<Array<string>>([])
+  const [newUserEmailValue, setNewUserEmailValue] = useState('')
   const [newUserEmailError, setNewUserEmailError] = useState<string | null>(
     null
-  );
-  const [newUserEmailIsValid, setNewUserEmailIsValid] =
-    useState<boolean>(false);
+  )
+  const [newUserEmailIsValid, setNewUserEmailIsValid] = useState<boolean>(false)
 
   const handleKeyDown = (evt: any) => {
-    if (["Enter", "Tab", ",", " "].includes(evt.key)) {
-      evt.preventDefault();
-      var value = newUserEmailValue.trim();
+    if (['Enter', 'Tab', ',', ' '].includes(evt.key)) {
+      evt.preventDefault()
+      var value = newUserEmailValue.trim()
 
       if (value && isValid(value)) {
-        setNewUserEmailItems([...newUserEmailItems, value]);
-        setNewUserEmailValue("");
-        setNewUserEmailIsValid(true);
+        setNewUserEmailItems([...newUserEmailItems, value])
+        setNewUserEmailValue('')
+        setNewUserEmailIsValid(true)
       }
     }
-  };
+  }
 
   const handleChange = (evt: any) => {
-    setNewUserEmailValue(evt.target.value);
-    setNewUserEmailError(null);
+    setNewUserEmailValue(evt.target.value)
+    setNewUserEmailError(null)
     if (
       evt.target.value &&
       !isInList(evt.target.value) &&
       isEmail(evt.target.value)
     ) {
-      setNewUserEmailIsValid(true);
+      setNewUserEmailIsValid(true)
     } else {
       if (newUserEmailItems.length > 0 && evt.target.value.length === 0) {
-        setNewUserEmailIsValid(true);
+        setNewUserEmailIsValid(true)
       } else {
         if (isInList(evt.target.value)) {
-          setNewUserEmailError(`${evt.target.value} has already been added.`);
+          setNewUserEmailError(`${evt.target.value} has already been added.`)
         }
 
-        setNewUserEmailIsValid(false);
+        setNewUserEmailIsValid(false)
       }
     }
-  };
+  }
 
   const handleDelete = (item: string) => {
-    setNewUserEmailItems(newUserEmailItems.filter((i) => i !== item));
-    setNewUserEmailValue("");
-    let arraySize = newUserEmailItems.filter((i) => i !== item);
+    setNewUserEmailItems(newUserEmailItems.filter((i) => i !== item))
+    setNewUserEmailValue('')
+    let arraySize = newUserEmailItems.filter((i) => i !== item)
     if (arraySize.length === 0) {
-      setNewUserEmailIsValid(false);
-      setDisplayFormThree(false);
-      setDisplayFormTwo(false);
-      setDisplayFormOne(true);
-      setCreateUserStep(1);
-      setRadioPermission("");
+      setNewUserEmailIsValid(false)
+      setDisplayFormThree(false)
+      setDisplayFormTwo(false)
+      setDisplayFormOne(true)
+      setCreateUserStep(1)
+      setRadioPermission('')
     }
-  };
+  }
 
   const handlePaste = (evt: any) => {
-    evt.preventDefault();
+    evt.preventDefault()
 
-    var paste = evt.clipboardData.getData("text");
-    var emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g);
+    var paste = evt.clipboardData.getData('text')
+    var emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g)
 
     if (emails) {
-      var toBeAdded = emails.filter((email: string) => !isInList(email));
-      setNewUserEmailItems([...newUserEmailItems, ...toBeAdded]);
-      setNewUserEmailValue("");
-      setNewUserEmailIsValid(true);
+      var toBeAdded = emails.filter((email: string) => !isInList(email))
+      setNewUserEmailItems([...newUserEmailItems, ...toBeAdded])
+      setNewUserEmailValue('')
+      setNewUserEmailIsValid(true)
     }
-  };
+  }
 
   const isValid = (email: string) => {
-    let error = null;
+    let error = null
     if (isInList(email)) {
-      error = `${email} has already been added.`;
+      error = `${email} has already been added.`
     }
 
     if (!isEmail(email)) {
-      error = `${email} is not a valid email address.`;
+      error = `${email} is not a valid email address.`
     }
 
     if (error) {
-      setNewUserEmailError(error);
-      return false;
+      setNewUserEmailError(error)
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const isInList = (email: string) => {
-    return newUserEmailItems.includes(email);
-  };
+    return newUserEmailItems.includes(email)
+  }
 
   const isEmail = (email: string) => {
-    return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email);
-  };
+    return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email)
+  }
 
   // Step 2
-  const [radioPermission, setRadioPermission] = useState("");
+  const [radioPermission, setRadioPermission] = useState('')
 
   function handleClickOnRadioPermission(event: any) {
     if (event.target.value === radioPermission) {
-      setRadioPermission("");
+      setRadioPermission('')
     } else {
-      setRadioPermission(event.target.value);
+      setRadioPermission(event.target.value)
     }
   }
+
+  // Step 3 -> function Save new users
+  const {
+    mutate: createUsersSettings,
+    isLoading: isLoadingCreateUsersSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsUsers.createUsersSettings.useMutation({
+      async onSuccess(data) {
+        setNewUserEmailItemsResponse(data)
+        setSavingNewUser(false)
+        setDisplayFormFour(true)
+        setCreateUserStep(4)
+        await new Promise((r) => setTimeout(r, 1000))
+        setDisplayFormThree(false)
+        toast.success(`Users created`, {
+          position: 'top-right',
+        })
+      },
+      onError(error) {
+        toast.error(error.message, {
+          position: 'top-right',
+        })
+      },
+    })
 
   //Step 4 confirmation + link
   const [newUserEmailItemsResponse, setNewUserEmailItemsResponse] = useState<
     Array<NewUserAddedFormValues>
-  >([]);
-
-
+  >([])
+  const {
+    mutate: createUsersExtraSettings,
+    isLoading: isLoadingCreateUsersExtraSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsUsers.createUsersExtraSettings.useMutation(
+      {
+        async onSuccess(data) {
+          setSavingNewUser(false)
+          finishProcess()
+          toast.success(`Users created`, {
+            position: 'top-right',
+          })
+        },
+        onError(error) {
+          toast.error(error.message, {
+            position: 'top-right',
+          })
+        },
+      }
+    )
 
   // Button next & Step 3
   const handleNextStep = async () => {
     if (createUserStep === 1 && newUserEmailIsValid) {
-      if (newUserEmailValue !== "") {
-        var value = newUserEmailValue.trim();
+      if (newUserEmailValue !== '') {
+        var value = newUserEmailValue.trim()
         if (value && isValid(value)) {
-          setNewUserEmailItems([...newUserEmailItems, value]);
-          setNewUserEmailValue("");
-          setNewUserEmailIsValid(true);
+          setNewUserEmailItems([...newUserEmailItems, value])
+          setNewUserEmailValue('')
+          setNewUserEmailIsValid(true)
         }
       }
-      setDisplayFormTwo(true);
-      setCreateUserStep(2);
-      await new Promise((r) => setTimeout(r, 1000));
-      setDisplayFormOne(false);
+      setDisplayFormTwo(true)
+      setCreateUserStep(2)
+      await new Promise((r) => setTimeout(r, 1000))
+      setDisplayFormOne(false)
     }
-    if (createUserStep === 2 && radioPermission !== "") {
-      setDisplayFormThree(true);
-      setCreateUserStep(3);
-      await new Promise((r) => setTimeout(r, 1000));
-      setDisplayFormTwo(false);
+    if (createUserStep === 2 && radioPermission !== '') {
+      setDisplayFormThree(true)
+      setCreateUserStep(3)
+      await new Promise((r) => setTimeout(r, 1000))
+      setDisplayFormTwo(false)
     }
-    if (createUserStep === 3 && radioPermission !== "" && newUserEmailIsValid) {
+    if (createUserStep === 3 && radioPermission !== '' && newUserEmailIsValid) {
       //set user function
-      setSavingNewUser(true);
-      const response = await fetch(
-        "/api/settings/account/users-and-teams/users",
-        {
-          method: HttpMethod.POST,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            emails: newUserEmailItems,
-            //need to add permission
-          }),
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setNewUserEmailItemsResponse(data);
-        setSavingNewUser(false);
-        setDisplayFormFour(true);
-        setCreateUserStep(4);
-        await new Promise((r) => setTimeout(r, 1000));
-        setDisplayFormThree(false);
-      }else{
-        //error
-      }
+      setSavingNewUser(true)
+      createUsersSettings({
+        userId,
+        emails: newUserEmailItems,
+        //need to add permission
+      })
     }
     if (createUserStep === 4) {
       //send extra users settings to server
-      if(team){
-        setSavingNewUser(true);
-        let emailsAndIdToSend:string[] = [];
-        newUserEmailItemsResponse.map(newUserEmailItem => {
-          emailsAndIdToSend.push(newUserEmailItem.id!);
-        });
-        const response = await fetch(
-          "/api/settings/account/users-and-teams/users-extra",
-          {
-            method: HttpMethod.POST,
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId,
-              emails: emailsAndIdToSend,
-              team: team,
-              //need to add savve this custom permission 
-              // need to add presets
-            }),
-          }
-        );
-        if (response.ok) {
-          setSavingNewUser(false);
-          finishProcess();
-        }else{
-          // error
-        }
-      }else{
-        // if no extra users settings directly finish the process        
-        finishProcess();
+      if (team) {
+        setSavingNewUser(true)
+        let emailsAndIdToSend: string[] = []
+        newUserEmailItemsResponse.map((newUserEmailItem) => {
+          emailsAndIdToSend.push(newUserEmailItem.id!)
+        })
+        createUsersExtraSettings({
+          userId,
+          emails: emailsAndIdToSend,
+          team: team,
+          // need to add savve this custom permission
+          // need to add presets
+        })
+      } else {
+        // if no extra users settings directly finish the process
+        finishProcess()
       }
     }
-  };
+  }
 
   // Button Previous
   const handlePreviousStep = async () => {
     if (createUserStep === 1) {
     }
     if (createUserStep === 2) {
-      setDisplayFormOne(true);
-      await new Promise((r) => setTimeout(r, 50));
-      setCreateUserStep(1);
-      await new Promise((r) => setTimeout(r, 950));
-      setDisplayFormTwo(false);
+      setDisplayFormOne(true)
+      await new Promise((r) => setTimeout(r, 50))
+      setCreateUserStep(1)
+      await new Promise((r) => setTimeout(r, 950))
+      setDisplayFormTwo(false)
     }
     if (createUserStep === 3) {
-      setDisplayFormTwo(true);
-      await new Promise((r) => setTimeout(r, 50));
-      setCreateUserStep(2);
-      await new Promise((r) => setTimeout(r, 950));
-      setDisplayFormThree(false);
+      setDisplayFormTwo(true)
+      await new Promise((r) => setTimeout(r, 50))
+      setCreateUserStep(2)
+      await new Promise((r) => setTimeout(r, 950))
+      setDisplayFormThree(false)
     }
-  };
+  }
 
   //copy link
-  const [clickCopyLinkTrigger, setClickCopyLinkTrigger] = useState(false);
+  const [clickCopyLinkTrigger, setClickCopyLinkTrigger] = useState(false)
 
   const onClickCopyLink = (linkCopied: string) => {
-    navigator.clipboard.writeText(linkCopied);
-    setClickCopyLinkTrigger(true);
+    navigator.clipboard.writeText(linkCopied)
+    setClickCopyLinkTrigger(true)
     setTimeout(() => {
-      setClickCopyLinkTrigger(false);
-    }, 2000);
-  };
-
+      setClickCopyLinkTrigger(false)
+    }, 2000)
+  }
 
   // step 4 set Teams
   // Get data for Form
-  const [optionsTeams, setOptionsTeams] = useState<Array<{ value: string; label: string, disabled?: boolean }>>([]);
+  const [optionsTeams, setOptionsTeams] = useState<
+    Array<{ value: string; label: string; disabled?: boolean }>
+  >([])
 
   const [team, setTeam] = useState<{
-    value: string;
-    label: string;
-  } | null>(null);
+    value: string
+    label: string
+  } | null>(null)
 
   const handleChangeTeam = (value: any) => {
     if (value) {
-      setTeam(value);
+      setTeam(value)
     } else {
       setTeam(null)
     }
-  };
+  }
 
-  const { data: teamsList } = useSWR<{ teams: { id: string; name: string }[]; } | null>(
+  const { data: teamsList } = useSWR<{
+    teams: { id: string; name: string }[]
+  } | null>(
     userId &&
-    `/api/settings/account/users-and-teams/teams-drawer?userId=${userId}`,
+      `/api/settings/account/users-and-teams/teams-drawer?userId=${userId}`,
     fetcher,
     {
-      onError: () => router.push("/"),
+      onError: () => router.push('/'),
       revalidateOnFocus: false, // on come back to page
       revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
       revalidateIfStale: true, //if data stale retry
       revalidateOnMount: true,
       onSuccess: (data) => {
         if (data) {
-          if (
-            optionsTeams.length === 0
-          ) {
+          if (optionsTeams.length === 0) {
             // Team list
             let optionsTeamsArray: Array<{
-              value: string;
-              label: string;
-              disabled?: boolean;
-            }> = [];
+              value: string
+              label: string
+              disabled?: boolean
+            }> = []
             data.teams.forEach((team) => {
               optionsTeamsArray.push({
                 value: team.id,
                 label: team.name,
-              });
-              setOptionsTeams(optionsTeamsArray);
-            });
+              })
+              setOptionsTeams(optionsTeamsArray)
+            })
           }
         }
       },
     }
-  );
-
+  )
 
   return (
     <div className="fixed w-full h-full top-0 left-0 z-30 bg-white dark:bg-gray-800 flex flex-col">
@@ -370,9 +379,9 @@ export default function CreateUser({
           >
             <Timeline.Item
               className={
-                "items-center flex-col justify-center flex grow shrink" +
-                (createUserStep === 1 ? " active" : "") +
-                (createUserStep > 1 ? " complete" : "")
+                'items-center flex-col justify-center flex grow shrink' +
+                (createUserStep === 1 ? ' active' : '') +
+                (createUserStep > 1 ? ' complete' : '')
               }
             >
               <Timeline.Point
@@ -387,9 +396,9 @@ export default function CreateUser({
             </Timeline.Item>
             <Timeline.Item
               className={
-                "items-center flex-col justify-center flex grow shrink" +
-                (createUserStep === 2 ? " active" : "") +
-                (createUserStep > 2 ? " complete" : "")
+                'items-center flex-col justify-center flex grow shrink' +
+                (createUserStep === 2 ? ' active' : '') +
+                (createUserStep > 2 ? ' complete' : '')
               }
             >
               <Timeline.Point
@@ -404,9 +413,9 @@ export default function CreateUser({
             </Timeline.Item>
             <Timeline.Item
               className={
-                "items-center flex-col justify-center flex grow shrink" +
-                (createUserStep === 3 ? " active" : "") +
-                (createUserStep > 3 ? " complete" : "")
+                'items-center flex-col justify-center flex grow shrink' +
+                (createUserStep === 3 ? ' active' : '') +
+                (createUserStep > 3 ? ' complete' : '')
               }
             >
               <Timeline.Point
@@ -434,9 +443,9 @@ export default function CreateUser({
             {/* Step 1 */}
             <div
               className={
-                "flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0" +
-                (createUserStep === 2 ? " ml-[-100vw]" : "") +
-                (!displayFormOne ? " hidden" : "")
+                'flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0' +
+                (createUserStep === 2 ? ' ml-[-100vw]' : '') +
+                (!displayFormOne ? ' hidden' : '')
               }
             >
               <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
@@ -472,19 +481,19 @@ export default function CreateUser({
                               Adding more than one user?
                             </b>
                             <p className="my-2">
-                              Press{" "}
+                              Press{' '}
                               <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
                                 Enter
-                              </kbd>{" "}
-                              or{" "}
+                              </kbd>{' '}
+                              or{' '}
                               <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
                                 Tab
-                              </kbd>{" "}
+                              </kbd>{' '}
                               after each email address or separate each email
-                              address with a{" "}
+                              address with a{' '}
                               <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
                                 ,
-                              </kbd>{" "}
+                              </kbd>{' '}
                               .
                             </p>
                           </div>
@@ -496,8 +505,8 @@ export default function CreateUser({
                     <TextInput
                       id="email"
                       required={true}
-                      {...registerNewUser("email")}
-                      className={"input " + (newUserEmailError && " has-error")}
+                      {...registerNewUser('email')}
+                      className={'input ' + (newUserEmailError && ' has-error')}
                       value={newUserEmailValue}
                       placeholder="Type or paste email addresses and press `Enter`..."
                       onKeyDown={handleKeyDown}
@@ -525,9 +534,9 @@ export default function CreateUser({
             {/* Step 2 */}
             <div
               className={
-                "flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0" +
-                (createUserStep === 3 ? " ml-[-100vw]" : "") +
-                (!displayFormTwo ? " hidden" : "")
+                'flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0' +
+                (createUserStep === 3 ? ' ml-[-100vw]' : '') +
+                (!displayFormTwo ? ' hidden' : '')
               }
             >
               <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
@@ -543,7 +552,7 @@ export default function CreateUser({
                         value="permission-default-set"
                         className="hidden peer"
                         readOnly
-                        checked={radioPermission === "permission-default-set"}
+                        checked={radioPermission === 'permission-default-set'}
                         onClick={handleClickOnRadioPermission}
                         required
                       />
@@ -573,7 +582,7 @@ export default function CreateUser({
                         className="hidden peer"
                         readOnly
                         onClick={handleClickOnRadioPermission}
-                        checked={radioPermission === "permission-saved-set"}
+                        checked={radioPermission === 'permission-saved-set'}
                       />
                       <label
                         htmlFor="permission-saved-set"
@@ -600,7 +609,7 @@ export default function CreateUser({
                         className="hidden peer"
                         readOnly
                         onClick={handleClickOnRadioPermission}
-                        checked={radioPermission === "permission-scratch"}
+                        checked={radioPermission === 'permission-scratch'}
                       />
                       <label
                         htmlFor="permission-scratch"
@@ -626,9 +635,9 @@ export default function CreateUser({
             {/* Step 3 */}
             <div
               className={
-                "flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0" +
-                (createUserStep === 4 ? " ml-[-100vw]" : "") +
-                (!displayFormThree ? " hidden" : "")
+                'flex-none w-screen py-6 px-3 first:pl-3 last:pr-6 left-0 transform translate-x-0 transition-all duration-700 ease-in-out ml-0' +
+                (createUserStep === 4 ? ' ml-[-100vw]' : '') +
+                (!displayFormThree ? ' hidden' : '')
               }
             >
               <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
@@ -685,11 +694,15 @@ export default function CreateUser({
             <div className="flex-none py-6 px-3 first:pl-6 w-screen h-full">
               <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
                 <div className="flex grow shrink flex-col justify-start items-center w-full max-w-3xl">
-
-                  <h2 className="text-gray-800 dark:text-gray-400 font-medium text-xl text-center mt-10 mb-10">Success! You&apos;ve invited 1 user and sent an email notification.</h2>
+                  <h2 className="text-gray-800 dark:text-gray-400 font-medium text-xl text-center mt-10 mb-10">
+                    Success! You&apos;ve invited 1 user and sent an email
+                    notification.
+                  </h2>
 
                   <div className="flex flex-row justify-between w-full">
-                    <h3 className="text-gray-800 dark:text-gray-400 font-medium text-xl text-center">Continue setting up your users with these next steps:</h3>
+                    <h3 className="text-gray-800 dark:text-gray-400 font-medium text-xl text-center">
+                      Continue setting up your users with these next steps:
+                    </h3>
                   </div>
                   <Accordion flush alwaysOpen className="w-full">
                     <Accordion.Panel>
@@ -708,19 +721,21 @@ export default function CreateUser({
                                 <p className="text-gray-800 dark:text-gray-400 mb-2">
                                   <b>Unique link for:</b> {item.email}
                                 </p>
-                                {item.link.startsWith("https:") ? (
+                                {item.link.startsWith('https:') ? (
                                   <span className="relative inline-block">
                                     <div
                                       id="tooltip-default"
                                       role="tooltip"
                                       className={
                                         (clickCopyLinkTrigger
-                                          ? "opacity-1 visible "
-                                          : "invisible opacity-0") +
-                                        " inline-flex left-0 right-0 mr-auto ml-auto justify-center absolute bottom-[120%] w-min z-10 py-2 px-4 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm transition-opacity duration-300 tooltip dark:bg-gray-700"
+                                          ? 'opacity-1 visible '
+                                          : 'invisible opacity-0') +
+                                        ' inline-flex left-0 right-0 mr-auto ml-auto justify-center absolute bottom-[120%] w-min z-10 py-2 px-4 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm transition-opacity duration-300 tooltip dark:bg-gray-700'
                                       }
                                     >
-                                      <span className="flex">Copied&nbsp;!</span>
+                                      <span className="flex">
+                                        Copied&nbsp;!
+                                      </span>
                                       <div
                                         className="tooltip-arrow -bottom-1"
                                         data-popper-arrow
@@ -785,7 +800,8 @@ export default function CreateUser({
                       </Accordion.Title>
                       <Accordion.Content>
                         <h4 className="text-gray-800 dark:text-gray-400 font-medium text-lg text-left">
-                          Presets help you set up the user experience once they join.
+                          Presets help you set up the user experience once they
+                          join.
                         </h4>
                         <div className="flex flex-col flex-warp mt-4 gap-4 w-full">
                           <div className="flex gap-4">
@@ -818,12 +834,16 @@ export default function CreateUser({
                       </Accordion.Title>
                       <Accordion.Content>
                         <h4 className="text-gray-800 dark:text-gray-400 font-medium text-lg text-left">
-                          Save time inviting future users that need the same access.
+                          Save time inviting future users that need the same
+                          access.
                         </h4>
                         <div className="flex flex-col flex-warp mt-4 gap-4 w-full">
                           <div className="flex gap-4">
                             <Checkbox id="saveCustomPermSet" />
-                            <Label htmlFor="saveCustomPermSet" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <Label
+                              htmlFor="saveCustomPermSet"
+                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                            >
                               Save as a custom Permission Set
                             </Label>
                             <Tooltip
@@ -849,7 +869,7 @@ export default function CreateUser({
         <Button
           onClick={() => closeProcess()}
           color="gray"
-          className={"w-20 " + (createUserStep === 4 && " hidden")}
+          className={'w-20 ' + (createUserStep === 4 && ' hidden')}
           disabled={savingNewUser ? true : false}
         >
           Cancel
@@ -859,11 +879,11 @@ export default function CreateUser({
             color="dark"
             disabled={savingNewUser ? true : false}
             className={
-              "w-20 " +
-              ((createUserStep === 1 || createUserStep === 4) && " hidden")
+              'w-20 ' +
+              ((createUserStep === 1 || createUserStep === 4) && ' hidden')
             }
             onClick={() => {
-              handlePreviousStep();
+              handlePreviousStep()
             }}
           >
             Back
@@ -876,33 +896,33 @@ export default function CreateUser({
               savingNewUser
                 ? true
                 : createUserStep === 1 && !newUserEmailIsValid
-                  ? true
-                  : createUserStep === 1 && newUserEmailIsValid
-                    ? false
-                    : createUserStep === 2 && radioPermission == ""
-                      ? true
-                      : createUserStep === 2 && radioPermission !== ""
-                        ? false
-                        : createUserStep === 3 &&
-                          radioPermission !== "" &&
-                          newUserEmailIsValid
-                          ? false
-                          : createUserStep === 4
-                            ? false
-                            : true
+                ? true
+                : createUserStep === 1 && newUserEmailIsValid
+                ? false
+                : createUserStep === 2 && radioPermission == ''
+                ? true
+                : createUserStep === 2 && radioPermission !== ''
+                ? false
+                : createUserStep === 3 &&
+                  radioPermission !== '' &&
+                  newUserEmailIsValid
+                ? false
+                : createUserStep === 4
+                ? false
+                : true
             }
             onClick={() => {
-              handleNextStep();
+              handleNextStep()
             }}
           >
             {createUserStep === 3
-              ? "Send"
+              ? 'Send'
               : createUserStep === 4
-                ? "Done"
-                : "Next"}
+              ? 'Done'
+              : 'Next'}
           </Button>
         </Button.Group>
       </div>
-    </div >
-  );
+    </div>
+  )
 }

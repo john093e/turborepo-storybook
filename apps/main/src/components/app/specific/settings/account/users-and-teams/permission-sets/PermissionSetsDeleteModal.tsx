@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react";
-import { useDebounce } from "use-debounce";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from 'react'
+import { useDebounce } from 'use-debounce'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 
-import { Button, Label, Modal, TextInput } from "flowbite-react";
+import { Button, Label, Modal, TextInput } from 'flowbite-react'
 
-import { HttpMethod } from "@types";
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PropForm {
-  name: string;
-  id: string;
-  userId: string;
-  closeProcess: () => void;
-  finishProcess: () => void;
+  name: string
+  id: string
+  userId: string
+  closeProcess: () => void
+  finishProcess: () => void
 }
 type DeletFormValues = {
-  toValidate: string;
-};
+  toValidate: string
+}
 export default function PermissionSetsDeleteModal({
   name,
   id,
@@ -23,71 +24,83 @@ export default function PermissionSetsDeleteModal({
   closeProcess,
   finishProcess,
 }: PropForm) {
-  const [showModal, setShowModal] = useState<boolean>(true);
+  const [showModal, setShowModal] = useState<boolean>(true)
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    setShowModal(false)
     setTimeout(() => {
-      closeProcess();
-    }, 1000);
-  };
+      closeProcess()
+    }, 1000)
+  }
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<DeletFormValues>();
+  } = useForm<DeletFormValues>()
 
-  const [toValidateIsValid, setToValidateIsValid] = useState<boolean>(true);
-  const [toValidate, setToValidate] = useState<string>("");
-  const [debouncedCharityNumber] = useDebounce(toValidate, 500);
+  const [toValidateIsValid, setToValidateIsValid] = useState<boolean>(true)
+  const [toValidate, setToValidate] = useState<string>('')
+  const [debouncedCharityNumber] = useDebounce(toValidate, 500)
   const handleToValidateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const result = e.target.value;
-    setToValidate(result);
-  };
+    const result = e.target.value
+    setToValidate(result)
+  }
 
   useEffect(() => {
     if (debouncedCharityNumber === name) {
-      setToValidateIsValid(false);
+      setToValidateIsValid(false)
     } else {
-      setToValidateIsValid(true);
+      setToValidateIsValid(true)
     }
-  }, [debouncedCharityNumber, name]);
+  }, [debouncedCharityNumber, name])
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [resetPermissionSetsSuccess, setResetPermissionSetsSuccess] = useState<string | null>();
-  const [resetPermissionSetsError, setResetPermissionSetsError] = useState<string | null>();
-  const onSubmit = handleSubmit(async (data) => {
-    try {
-      setLoading(true);
-      await fetch(
-        `/api/settings/account/users-and-teams/permission-sets?userId=${userId}&id=${id}`,
-        {
-          method: HttpMethod.DELETE,
-        }
-      ).then((res) => {
-        setLoading(false);
+  const [loading, setLoading] = useState<boolean>(false)
+  const [resetPermissionSetsSuccess, setResetPermissionSetsSuccess] = useState<
+    string | null
+  >()
+  const [resetPermissionSetsError, setResetPermissionSetsError] = useState<
+    string | null
+  >()
 
-        if (res.ok) {
-          setResetPermissionSetsSuccess("C'est officiel ce set de permission a été supprimé ");
-          setLoading(false);
-          setResetPermissionSetsError("");
+  const {
+    mutate: deleteTeamsSettings,
+    isLoading: isLoadingDeleteTeamsSettings,
+  } =
+    api.adminSettingsAccountUsersAndTeamsPermissionSets.deleteTeamsSettings.useMutation(
+      {
+        async onSuccess(data) {
+          setResetPermissionSetsSuccess(
+            "C'est officiel ce set de permission a été supprimé "
+          )
+          setLoading(false)
+          setResetPermissionSetsError('')
           setTimeout(() => {
-            setShowModal(false);
-            finishProcess();
-          }, 2000);
-        } else {
-          setLoading(false);
-          setResetPermissionSetsError("An error occured");
-          setResetPermissionSetsSuccess(null);
-        }
-      });
-    } catch (error) {
-      setLoading(false);
-      setResetPermissionSetsError("An error occured");
-      setResetPermissionSetsSuccess(null);
-    }
-  });
+            setShowModal(false)
+            finishProcess()
+          }, 2000)
+          toast.success(`Permission sets deleted`, {
+            position: 'top-right',
+          })
+        },
+        onError(error) {
+          setLoading(false)
+          setResetPermissionSetsError('An error occured')
+          setResetPermissionSetsSuccess(null)
+          toast.error(error.message, {
+            position: 'top-right',
+          })
+        },
+      }
+    )
+
+  const onSubmit = handleSubmit(async (data) => {
+    setLoading(true)
+    deleteTeamsSettings({
+      userId: userId,
+      id: id,
+    })
+  })
   return (
     <div>
       <Modal
@@ -119,13 +132,14 @@ export default function PermissionSetsDeleteModal({
             {!resetPermissionSetsSuccess ? (
               <>
                 <p className="text-base font-thin text-gray-500 dark:text-gray-400">
-                  You&apos;re about to delete 1 Permission Set. This action{" "}
+                  You&apos;re about to delete 1 Permission Set. This action{' '}
                   <b className="text-black font-medium dark:text-gray-200">
                     can&apos;t be undone
-                  </b>. This will not change any access users have to your account.
+                  </b>
+                  . This will not change any access users have to your account.
                 </p>
                 <p className="text-base font-thin text-gray-500 dark:text-gray-400">
-                  Permission Set Name:{" "}
+                  Permission Set Name:{' '}
                   <b className="text-black font-medium dark:text-gray-200">
                     {name}
                   </b>
@@ -142,7 +156,7 @@ export default function PermissionSetsDeleteModal({
                     <TextInput
                       type="text"
                       value={toValidate}
-                      {...register("toValidate", {
+                      {...register('toValidate', {
                         required: true,
                         onChange: handleToValidateChange,
                         pattern:
@@ -177,5 +191,5 @@ export default function PermissionSetsDeleteModal({
         </Modal.Body>
       </Modal>
     </div>
-  );
+  )
 }

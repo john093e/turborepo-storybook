@@ -1,136 +1,109 @@
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic'
 
-import { useRouter } from "next/router";
-import useSWR, { mutate } from "swr";
-import { useContext, useState, useEffect } from "react";
-import { useDebounce } from "use-debounce";
+import { useRouter } from 'next/router'
 
-import {
-  Button,
-  Checkbox,
-  Table,
-  TextInput,
-  Tooltip,
-} from "flowbite-react";
+import { useContext, useState, useEffect } from 'react'
+import { useDebounce } from 'use-debounce'
+
+import { Button, Checkbox, Table, TextInput } from 'flowbite-react'
 
 import {
   UilSearchAlt,
   UilSortAmountDown,
   UilSortAmountUp,
-} from "@iconscout/react-unicons";
+} from '@iconscout/react-unicons'
 
 const PermissionSetsDrawer = dynamic(
   () =>
     import(
-      "@components/app/specific/settings/account/users-and-teams/permission-sets/PermissionSetsDrawer"
+      '@components/app/specific/settings/account/users-and-teams/permission-sets/PermissionSetsDrawer'
     ),
   {
     ssr: false,
   }
-);
+)
 const PermissionSetsDeleteModal = dynamic(
   () =>
     import(
-      "@components/app/specific/settings/account/users-and-teams/permission-sets/PermissionSetsDeleteModal"
+      '@components/app/specific/settings/account/users-and-teams/permission-sets/PermissionSetsDeleteModal'
     ),
   {
     ssr: false,
   }
-);
+)
 
-import { fetcher } from "@lib/fetcher";
+import { AppLoggedInContext } from '@contexts/AppLoggedInContext'
 
-import { PermissionSets } from "@prisma/client";
-
-import { AppLoggedInContext } from "@contexts/AppLoggedInContext";
-import { AppLoggedInContextType } from "@types/appLoggedInContext";
-
-interface AccountPermissionSets extends Pick<PermissionSets, "id" | "name" | "editable"> {
-  access: {
-    SuperAdmin: boolean;
-    SalesProfessional: boolean;
-    Marketing: boolean;
-    Sales: boolean;
-    Service: boolean;
-    Reports: boolean;
-    Account: boolean;
-  };
-  users: number;
-}
-
-interface AccountPermissionSetsList {
-  data: Array<AccountPermissionSets> | [];
-  pagination: {
-    total: number;
-    pageCount: number;
-    currentPage: number;
-    perPage: number;
-    from: number;
-    to: number;
-  };
-}
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PropForm {
-  userId: string;
+  userId: string
 }
 export default function PermissionSetsSet({ userId }: PropForm) {
-  const router = useRouter();
+  const router = useRouter()
 
   // pagination table
-  const [toTake, setToTake] = useState(25);
-  const [toSkip, setToSkip] = useState(1);
+  const [toTake, setToTake] = useState(25)
+  const [toSkip, setToSkip] = useState(1)
   // search user
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500)
   // pagination table
-  const [toOrderBy, setToOrderBy] = useState("");
-  const [toOrderByStartWith, setToOrderByStartWith] = useState("");
+  const [toOrderBy, setToOrderBy] = useState('')
+  const [toOrderByStartWith, setToOrderByStartWith] = useState('')
 
-  // get all teams from this account
-  const { data: permissionSetsList } = useSWR<AccountPermissionSetsList>(
-    userId &&
-    `/api/settings/account/users-and-teams/permission-sets?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`,
-    fetcher,
+  // get all Permission sets from this account
+  const {
+    data: permissionSetsList,
+    isLoading: isLoadingPermissionSetsList,
+    refetch: refetchPermissionSetsList,
+  } = api.adminSettingsAccountUsersAndTeamsPermissionSets.getPermissionSetsSettings.useQuery(
     {
-      onError: () => router.push("/"),
-      revalidateOnFocus: false, // on come back to page
-      revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
-      revalidateIfStale: true, //if data stale retry
+      userId: userId,
+      toTake: toTake,
+      toSkip: toSkip,
+      searchTerm: debouncedSearchTerm,
+      toOrderBy: toOrderBy,
+      toOrderByStartWith: toOrderByStartWith,
+    },
+    {
+      retry: 1,
+      onError: () => router.push('/'),
+      refetchOnWindowFocus: true, // on come back to page
+      refetchInterval: false, // ?
+      refetchIntervalInBackground: false, // ?
+      refetchOnReconnect: true, // computer come out of standby (reconnect to web)
     }
-  );
-
+  )
+  // debounce searcch term
   useEffect(() => {
     if (debouncedSearchTerm !== null || debouncedSearchTerm !== undefined) {
-      setToTake(25);
-      setToSkip(1);
-      setToOrderBy("");
-      setToOrderByStartWith("");
-      mutate(`/api/settings/account/users-and-teams/permission-sets`);
+      setToTake(25)
+      setToSkip(1)
+      setToOrderBy('')
+      setToOrderByStartWith('')
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm])
 
   // Handle Order By
   const handleOrderBy = (categoryName: string) => {
-    if (toOrderBy === "") {
-      setToOrderBy(categoryName);
-      setToOrderByStartWith("asc");
+    if (toOrderBy === '') {
+      setToOrderBy(categoryName)
+      setToOrderByStartWith('asc')
     } else {
       if (toOrderBy !== categoryName) {
-        setToOrderBy(categoryName);
-        setToOrderByStartWith("asc");
+        setToOrderBy(categoryName)
+        setToOrderByStartWith('asc')
       } else {
-        if (toOrderByStartWith === "asc") {
-          setToOrderByStartWith("desc");
+        if (toOrderByStartWith === 'asc') {
+          setToOrderByStartWith('desc')
         } else {
-          setToOrderBy("");
-          setToOrderByStartWith("");
+          setToOrderBy('')
+          setToOrderByStartWith('')
         }
       }
     }
-    mutate(
-      `/api/settings/account/users-and-teams/permission-sets?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+  }
 
   // Just an arrow
   const arrowDown = (
@@ -151,17 +124,15 @@ export default function PermissionSetsSet({ userId }: PropForm) {
         d="M19 9l-7 7-7-7"
       ></path>
     </svg>
-  );
+  )
 
   const { setRootDrawer, resetRootDrawer, setRootModal, resetRootModal } =
-    useContext(AppLoggedInContext) as AppLoggedInContextType;
+    useContext(AppLoggedInContext)
 
   const finishProcessDrawer = () => {
-    resetRootDrawer();
-    mutate(
-      `/api/settings/account/users-and-teams/permission-sets?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+    resetRootDrawer()
+    refetchPermissionSetsList()
+  }
 
   //Create a PermissionSets
   const handleCreateNewPermissionSets = () => {
@@ -172,8 +143,8 @@ export default function PermissionSetsSet({ userId }: PropForm) {
         userId={userId}
         id={null}
       />
-    );
-  };
+    )
+  }
 
   // Edit a PermissionSets
   const handleEditPermissionSets = (id: string) => {
@@ -184,14 +155,13 @@ export default function PermissionSetsSet({ userId }: PropForm) {
         userId={userId}
         id={id}
       />
-    );
-  };
+    )
+  }
+
   const finishProcessModal = () => {
-    resetRootModal();
-    mutate(
-      `/api/settings/account/users-and-teams/permission-sets?userId=${userId}&toTake=${toTake}&toSkip=${toSkip}&searchTerm=${searchTerm}&toOrderBy=${toOrderBy}&toOrderByStartWith=${toOrderByStartWith}`
-    );
-  };
+    resetRootModal()
+    refetchPermissionSetsList()
+  }
 
   //Delete a PermissionSets
   const handleDeletePermissionSets = (name: string, id: string) => {
@@ -203,8 +173,8 @@ export default function PermissionSetsSet({ userId }: PropForm) {
         id={id}
         userId={userId}
       />
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -226,7 +196,7 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                 className="w-full"
                 value={searchTerm}
                 onInput={(e) => {
-                  setSearchTerm(e.currentTarget.value);
+                  setSearchTerm(e.currentTarget.value)
                 }}
                 placeholder="Chercher un set de permissions"
                 required={true}
@@ -253,52 +223,48 @@ export default function PermissionSetsSet({ userId }: PropForm) {
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "name"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'name'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("name")}
+                onClick={() => handleOrderBy('name')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Name{" "}
-                  {toOrderBy === "name" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Name{' '}
+                  {toOrderBy === 'name' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
-              <Table.HeadCell
-                className="rounded-none cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-600"
-              >
-                <span className="flex w-full items-center gap-2">
-                  Access{" "}
-                </span>
+              <Table.HeadCell className="rounded-none cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-600">
+                <span className="flex w-full items-center gap-2">Access </span>
               </Table.HeadCell>
               <Table.HeadCell
                 className={
-                  (toOrderBy === "users"
-                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-                    : "rounded-none") +
-                  " cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  (toOrderBy === 'users'
+                    ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500'
+                    : 'rounded-none') +
+                  ' cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600'
                 }
-                onClick={() => handleOrderBy("users")}
+                onClick={() => handleOrderBy('users')}
               >
                 <span className="flex w-full items-center gap-2">
-                  Users{" "}
-                  {toOrderBy === "users" ? (
-                    toOrderByStartWith === "asc" ? (
+                  Users{' '}
+                  {toOrderBy === 'users' ? (
+                    toOrderByStartWith === 'asc' ? (
                       <UilSortAmountUp />
                     ) : (
                       <UilSortAmountDown />
                     )
                   ) : (
-                    ""
+                    ''
                   )}
                 </span>
               </Table.HeadCell>
@@ -332,7 +298,9 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                               color="dark"
                               size="xs"
                               disabled={!permissionSet.editable}
-                              onClick={() => handleEditPermissionSets(permissionSet.id)}
+                              onClick={() =>
+                                handleEditPermissionSets(permissionSet.id)
+                              }
                             >
                               Edit
                             </Button>
@@ -341,7 +309,10 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                               size="xs"
                               disabled={!permissionSet.editable}
                               onClick={() =>
-                                handleDeletePermissionSets(permissionSet.name!, permissionSet.id)
+                                handleDeletePermissionSets(
+                                  permissionSet.name!,
+                                  permissionSet.id
+                                )
                               }
                             >
                               Delete
@@ -353,14 +324,52 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                         <div className="flex flex-col">
                           <div>
                             <ul className="flex flex-row gap-2">
-                              {permissionSet.access.SuperAdmin && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[length:1px_60%] pl-2 last:pr-0">Super Admin</li>)}
-                              {(permissionSet.access.SuperAdmin && permissionSet.access.SalesProfessional) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Sales Professional</li>)}
-                              {!permissionSet.access.SuperAdmin && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-no-repeat  bg-[length:1px_60%] pl-2 last:pr-0">Contacts</li>)}
-                              {(!permissionSet.access.SuperAdmin && permissionSet.access.Marketing) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Marketing</li>)}
-                              {(!permissionSet.access.SuperAdmin && permissionSet.access.Sales) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Sales</li>)}
-                              {(!permissionSet.access.SuperAdmin && permissionSet.access.Service) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Service</li>)}
-                              {(!permissionSet.access.SuperAdmin && permissionSet.access.Reports) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Reports</li>)}
-                              {(!permissionSet.access.SuperAdmin && permissionSet.access.Account) && (<li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">Account</li>)}
+                              {permissionSet.access.SuperAdmin && (
+                                <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[length:1px_60%] pl-2 last:pr-0">
+                                  Super Admin
+                                </li>
+                              )}
+                              {permissionSet.access.SuperAdmin &&
+                                permissionSet.access.SalesProfessional && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Sales Professional
+                                  </li>
+                                )}
+                              {!permissionSet.access.SuperAdmin && (
+                                <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-no-repeat  bg-[length:1px_60%] pl-2 last:pr-0">
+                                  Contacts
+                                </li>
+                              )}
+                              {!permissionSet.access.SuperAdmin &&
+                                permissionSet.access.Marketing && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Marketing
+                                  </li>
+                                )}
+                              {!permissionSet.access.SuperAdmin &&
+                                permissionSet.access.Sales && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Sales
+                                  </li>
+                                )}
+                              {!permissionSet.access.SuperAdmin &&
+                                permissionSet.access.Service && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Service
+                                  </li>
+                                )}
+                              {!permissionSet.access.SuperAdmin &&
+                                permissionSet.access.Reports && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Reports
+                                  </li>
+                                )}
+                              {!permissionSet.access.SuperAdmin &&
+                                permissionSet.access.Account && (
+                                  <li className="text-xs font-normal first:bg-none first:bg-no-repeat first:pl-0 bg-left bg-no-repeat bg-[linear-gradient(180deg,#cbd6e2,#cbd6e2)] bg-[length:1px_60%] pl-2 last:pr-0">
+                                    Account
+                                  </li>
+                                )}
                             </ul>
                           </div>
                         </div>
@@ -442,11 +451,12 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                 aria-label="Table navigation"
               >
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  Showing{" "}
+                  Showing{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
-                    {permissionSetsList.pagination.from}-{permissionSetsList.pagination.to}
-                  </span>{" "}
-                  of{" "}
+                    {permissionSetsList.pagination.from}-
+                    {permissionSetsList.pagination.to}
+                  </span>{' '}
+                  of{' '}
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {permissionSetsList.pagination.total}
                   </span>
@@ -456,8 +466,10 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(permissionSetsList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/permission-sets`);
+                          setToSkip(
+                            permissionSetsList.pagination.currentPage - 1
+                          )
+                          refetchPermissionSetsList()
                         }}
                         className="block ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -482,8 +494,8 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(1);
-                          mutate(`/api/settings/account/users-and-teams/permission-sets`);
+                          setToSkip(1)
+                          refetchPermissionSetsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -502,8 +514,10 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(permissionSetsList.pagination.currentPage - 3);
-                          mutate(`/api/settings/account/users-and-teams/permission-sets`);
+                          setToSkip(
+                            permissionSetsList.pagination.currentPage - 3
+                          )
+                          refetchPermissionSetsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -515,8 +529,10 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(permissionSetsList.pagination.currentPage - 2);
-                          mutate(`/api/settings/account/users-and-teams/permission-sets`);
+                          setToSkip(
+                            permissionSetsList.pagination.currentPage - 2
+                          )
+                          refetchPermissionSetsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -528,8 +544,10 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     <li>
                       <Button
                         onClick={() => {
-                          setToSkip(permissionSetsList.pagination.currentPage - 1);
-                          mutate(`/api/settings/account/users-and-teams/permission-sets`);
+                          setToSkip(
+                            permissionSetsList.pagination.currentPage - 1
+                          )
+                          refetchPermissionSetsList()
                         }}
                         className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                       >
@@ -542,23 +560,23 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                       aria-current="page"
                       className={
                         (permissionSetsList.pagination.currentPage === 1 &&
-                          permissionSetsList.pagination.currentPage ===
+                        permissionSetsList.pagination.currentPage ===
                           permissionSetsList.pagination.pageCount
-                          ? "rounded-md "
+                          ? 'rounded-md '
                           : permissionSetsList.pagination.currentPage === 1 &&
                             permissionSetsList.pagination.currentPage <
-                            permissionSetsList.pagination.pageCount
-                            ? "rounded-l-md"
-                            : permissionSetsList.pagination.currentPage > 1 &&
-                              permissionSetsList.pagination.currentPage <
                               permissionSetsList.pagination.pageCount
-                              ? "rounded-none"
-                              : permissionSetsList.pagination.currentPage > 1 &&
-                                permissionSetsList.pagination.currentPage ===
-                                permissionSetsList.pagination.pageCount
-                                ? "rounded-r-md"
-                                : "rounded-none") +
-                        " p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+                          ? 'rounded-l-md'
+                          : permissionSetsList.pagination.currentPage > 1 &&
+                            permissionSetsList.pagination.currentPage <
+                              permissionSetsList.pagination.pageCount
+                          ? 'rounded-none'
+                          : permissionSetsList.pagination.currentPage > 1 &&
+                            permissionSetsList.pagination.currentPage ===
+                              permissionSetsList.pagination.pageCount
+                          ? 'rounded-r-md'
+                          : 'rounded-none') +
+                        ' p-0 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
                       }
                     >
                       {permissionSetsList.pagination.currentPage}
@@ -566,14 +584,14 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                   </li>
                   {permissionSetsList.pagination.currentPage > 1 &&
                     permissionSetsList.pagination.pageCount >
-                    permissionSetsList.pagination.currentPage && (
+                      permissionSetsList.pagination.currentPage && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(permissionSetsList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/permission-sets`
-                            );
+                            setToSkip(
+                              permissionSetsList.pagination.currentPage + 1
+                            )
+                            refetchPermissionSetsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -583,14 +601,14 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     )}
                   {permissionSetsList.pagination.currentPage > 1 &&
                     permissionSetsList.pagination.pageCount >
-                    permissionSetsList.pagination.currentPage + 1 && (
+                      permissionSetsList.pagination.currentPage + 1 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(permissionSetsList.pagination.currentPage + 2);
-                            mutate(
-                              `/api/settings/account/users-and-teams/permission-sets`
-                            );
+                            setToSkip(
+                              permissionSetsList.pagination.currentPage + 2
+                            )
+                            refetchPermissionSetsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -600,7 +618,7 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                     )}
                   {permissionSetsList.pagination.currentPage > 1 &&
                     permissionSetsList.pagination.pageCount >
-                    permissionSetsList.pagination.currentPage + 2 && (
+                      permissionSetsList.pagination.currentPage + 2 && (
                       <li>
                         <Button className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                           ...
@@ -611,14 +629,12 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                   {permissionSetsList.pagination.currentPage !==
                     permissionSetsList.pagination.pageCount &&
                     permissionSetsList.pagination.pageCount >
-                    permissionSetsList.pagination.currentPage + 2 && (
+                      permissionSetsList.pagination.currentPage + 2 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(permissionSetsList.pagination.pageCount);
-                            mutate(
-                              `/api/settings/account/users-and-teams/permission-sets`
-                            );
+                            setToSkip(permissionSetsList.pagination.pageCount)
+                            refetchPermissionSetsList()
                           }}
                           className="rounded-none p-0 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -630,14 +646,14 @@ export default function PermissionSetsSet({ userId }: PropForm) {
                   {permissionSetsList.pagination.currentPage !==
                     permissionSetsList.pagination.pageCount &&
                     permissionSetsList.pagination.pageCount >
-                    permissionSetsList.pagination.currentPage + 1 && (
+                      permissionSetsList.pagination.currentPage + 1 && (
                       <li>
                         <Button
                           onClick={() => {
-                            setToSkip(permissionSetsList.pagination.currentPage + 1);
-                            mutate(
-                              `/api/settings/account/users-and-teams/permission-sets`
-                            );
+                            setToSkip(
+                              permissionSetsList.pagination.currentPage + 1
+                            )
+                            refetchPermissionSetsList()
                           }}
                           className="block p-0 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                         >
@@ -665,5 +681,5 @@ export default function PermissionSetsSet({ userId }: PropForm) {
         </div>
       </div>
     </>
-  );
+  )
 }

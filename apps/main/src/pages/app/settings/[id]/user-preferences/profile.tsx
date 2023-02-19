@@ -1,14 +1,13 @@
-import { useRouter } from "next/router";
-import { useState, useEffect, ReactElement } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import useSWR, { mutate } from "swr";
-import { useForm } from "react-hook-form";
+import { useRouter } from 'next/router'
+import { useState, useEffect, ReactElement } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
+import { useForm } from 'react-hook-form'
 
-import Layout from "@components/app/layout/Layout";
-import SettingsNestedLayout from "@components/app/layout/SettingsNestedLayout";
-import type { NextPageWithLayout } from "../../../../_app";
-import BlurImage from "@components/BlurImage";
-import CloudinaryUploadWidget from "@components/Cloudinary";
+import Layout from '@components/app/layout/Layout'
+import SettingsNestedLayout from '@components/app/layout/SettingsNestedLayout'
+import type { NextPageWithLayout } from '../../../../_app'
+import BlurImage from '@components/BlurImage'
+import CloudinaryUploadWidget from '@components/Cloudinary'
 import {
   Tabs,
   TextInput,
@@ -17,108 +16,100 @@ import {
   Tooltip,
   Spinner,
   Button,
-} from "flowbite-react";
-import { UilInfo } from "@iconscout/react-unicons";
-import Select from "@components/common/forms/select/Select";
-import Loader from "@components/common/Loader";
+} from 'flowbite-react'
+import { UilInfo } from '@iconscout/react-unicons'
+import Select from '@components/common/forms/select/Select'
+import Loader from '@components/common/Loader'
 
-
-import { fetcher } from "@lib/fetcher";
-import { HttpMethod } from "@types";
-
-import { IUser } from "@types/appLoggedInContext";
-import { B2E } from "@prisma/client";
-
-interface UserPreferences
-  extends Pick<
-    IUser,
-    "firstname" | "lastname" | "image" | "language" | "dateFormat"
-  > {
-  B2E: Array<B2E>;
-  phone: string | null;
-  phonePrefix: string | null;
-}
+import { api, type RouterOutputs } from '@lib/utils/api'
 
 type UserPreferencesFormValues = {
-  firstname: string;
-  lastname: string;
-  image: string;
-  language: string;
-  dateFormat: string;
-  defaultHomepage: string;
-  phone: string;
-  phonePrefix: string;
-};
+  firstname: string
+  lastname: string
+  image: string
+  language: string
+  dateFormat: string
+  defaultHomepage: string
+  phone: string
+  phonePrefix: string
+}
 
 const optionsLanguage = [
-  { value: "de", label: "🇩🇪 Allemand" },
-  { value: "en", label: "🇬🇧 Anglais" },
-  { value: "es", label: "🇪🇸 Espagnol" },
-  { value: "fr", label: "🇫🇷 Français" },
-  { value: "it", label: "🇮🇹 Italien" },
-  { value: "nl", label: "🇳🇱 Néerlandais" },
-];
+  { value: 'de', label: '🇩🇪 Allemand' },
+  { value: 'en', label: '🇬🇧 Anglais' },
+  { value: 'es', label: '🇪🇸 Espagnol' },
+  { value: 'fr', label: '🇫🇷 Français' },
+  { value: 'it', label: '🇮🇹 Italien' },
+  { value: 'nl', label: '🇳🇱 Néerlandais' },
+]
 const optionsDate = [
-  { value: "UTC+1", label: "Europe centrale" },
-  { value: "UTC+2", label: "Europe de l’Est" },
-  { value: "UTC", label: "Greenwich" },
-  { value: "UTC+3", label: "Moscou" },
-];
+  { value: 'UTC+1', label: 'Europe centrale' },
+  { value: 'UTC+2', label: 'Europe de l’Est' },
+  { value: 'UTC', label: 'Greenwich' },
+  { value: 'UTC+3', label: 'Moscou' },
+]
 const optionsDefaultHomepage = [
-  { value: "activityFeed", label: "Activity Feed" },
-  { value: "ads", label: "Ads" },
-  { value: "dashboards", label: "Dashboards" },
-];
+  { value: 'activityFeed', label: 'Activity Feed' },
+  { value: 'ads', label: 'Ads' },
+  { value: 'dashboards', label: 'Dashboards' },
+]
 const optionsPhonePrefix = [
-  { value: "+30", label: "🇬🇷 +30" },
-  { value: "+31", label: "🇳🇱 +31" },
-  { value: "+32", label: "🇧🇪 +32" },
-  { value: "+33", label: "🇫🇷 +33" },
-  { value: "+34", label: "🇪🇸 +34" },
-  { value: "+350", label: "🇬🇮 +350" },
-  { value: "+351", label: "🇵🇹 +351" },
-  { value: "+352", label: "🇱🇺 +352" },
-  { value: "+353", label: "🇮🇪 +353" },
-  { value: "+356", label: "🇲🇹 +356" },
-  { value: "+357", label: "🇨🇾 +357" },
-  { value: "+358", label: "🇫🇮 +358" },
-  { value: "+359", label: "🇧🇬 +359" },
-  { value: "+36", label: "🇭🇺 +36" },
-  { value: "+370", label: "🇱🇹 +370" },
-  { value: "+371", label: "🇱🇻 +371" },
-  { value: "+372", label: "🇪🇪 +372" },
-  { value: "+385", label: "🇭🇷 +385" },
-  { value: "+386", label: "🇸🇮 +386" },
-  { value: "+39", label: "🇮🇹 +39" },
-  { value: "+40", label: "🇷🇴 +40" },
-  { value: "+420", label: "🇨🇿 +420" },
-  { value: "+421", label: "🇸🇰 +421" },
-  { value: "+423", label: "🇱🇮 +423" },
-  { value: "+43", label: "🇦🇹 +43" },
-  { value: "+44", label: "🇦🇹 +44" },
-  { value: "+45", label: "🇩🇰 +45" },
-  { value: "+46", label: "🇸🇪 +46" },
-  { value: "+47", label: "🇳🇴 +47" },
-  { value: "+48", label: "🇵🇱 +48" },
-  { value: "+49", label: "🇩🇪 +49" },
-];
+  { value: '+30', label: '🇬🇷 +30' },
+  { value: '+31', label: '🇳🇱 +31' },
+  { value: '+32', label: '🇧🇪 +32' },
+  { value: '+33', label: '🇫🇷 +33' },
+  { value: '+34', label: '🇪🇸 +34' },
+  { value: '+350', label: '🇬🇮 +350' },
+  { value: '+351', label: '🇵🇹 +351' },
+  { value: '+352', label: '🇱🇺 +352' },
+  { value: '+353', label: '🇮🇪 +353' },
+  { value: '+356', label: '🇲🇹 +356' },
+  { value: '+357', label: '🇨🇾 +357' },
+  { value: '+358', label: '🇫🇮 +358' },
+  { value: '+359', label: '🇧🇬 +359' },
+  { value: '+36', label: '🇭🇺 +36' },
+  { value: '+370', label: '🇱🇹 +370' },
+  { value: '+371', label: '🇱🇻 +371' },
+  { value: '+372', label: '🇪🇪 +372' },
+  { value: '+385', label: '🇭🇷 +385' },
+  { value: '+386', label: '🇸🇮 +386' },
+  { value: '+39', label: '🇮🇹 +39' },
+  { value: '+40', label: '🇷🇴 +40' },
+  { value: '+420', label: '🇨🇿 +420' },
+  { value: '+421', label: '🇸🇰 +421' },
+  { value: '+423', label: '🇱🇮 +423' },
+  { value: '+43', label: '🇦🇹 +43' },
+  { value: '+44', label: '🇦🇹 +44' },
+  { value: '+45', label: '🇩🇰 +45' },
+  { value: '+46', label: '🇸🇪 +46' },
+  { value: '+47', label: '🇳🇴 +47' },
+  { value: '+48', label: '🇵🇱 +48' },
+  { value: '+49', label: '🇩🇪 +49' },
+]
 const Page: NextPageWithLayout = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const userId = id;
+  const router = useRouter()
+  const { id } = router.query
+  const userId = id
 
-  const { data: userSettings } = useSWR<UserPreferences | null>(
-    userId && `/api/settings/user/user?userId=${userId}`,
-    fetcher,
+  const {
+    data: userSettings,
+    isLoading: isLoadingUserSettings,
+    refetch: refetchUserSettings,
+  } = api.adminSettingsUserDefaultsUser.getUserSettings.useQuery(
     {
-      onError: () => router.push("/"),
-      revalidateOnFocus: false, // on come back to page
-      revalidateOnReconnect: true, // computer come out of standby (reconnect to web)
-      revalidateIfStale: true, //if data stale retry
+      userId: userId as string,
+    },
+    {
+      retry: 1,
+      onError: () => router.push('/'),
+      refetchOnWindowFocus: false, // on come back to page
+      refetchInterval: false, // ?
+      refetchIntervalInBackground: false, // ?
+      refetchOnReconnect: true, // computer come out of standby (reconnect to web)
     }
-  );
+  )
 
-  const [saving, setSaving] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false)
   const {
     register,
     reset,
@@ -128,76 +119,76 @@ const Page: NextPageWithLayout = () => {
     formState: { isDirty, dirtyFields },
   } = useForm<UserPreferencesFormValues>({
     defaultValues: {
-      dateFormat: "",
-      defaultHomepage: "",
-      firstname: "",
-      image: "",
-      lastname: "",
-      language: "",
-      phone: "",
-      phonePrefix: "",
+      dateFormat: '',
+      defaultHomepage: '',
+      firstname: '',
+      image: '',
+      lastname: '',
+      language: '',
+      phone: '',
+      phonePrefix: '',
     },
-  });
+  })
 
   // Langue
-  const [language, setLanguage] = useState(null);
+  const [language, setLanguage] = useState(null)
   const handleChangeLanguage = (value: any) => {
-    setLanguage(value);
-    setValue("language", value.value, { shouldDirty: true });
-  };
+    setLanguage(value)
+    setValue('language', value.value, { shouldDirty: true })
+  }
   const setUserLanguage = (value: any) => {
     const foundLanguage: any = optionsLanguage.find((obj) => {
-      return obj.value === value;
-    });
+      return obj.value === value
+    })
     if (foundLanguage !== undefined) {
-      setLanguage(foundLanguage);
+      setLanguage(foundLanguage)
     }
-  };
+  }
 
   // Date Format
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState(null)
   const handleChangeDate = (value: any) => {
-    setDate(value);
-    setValue("dateFormat", value.value, { shouldDirty: true });
-  };
+    setDate(value)
+    setValue('dateFormat', value.value, { shouldDirty: true })
+  }
   const setUserDateFormat = (value: any) => {
     const foundDateFormat: any = optionsDate.find((obj) => {
-      return obj.value === value;
-    });
+      return obj.value === value
+    })
     if (foundDateFormat !== undefined) {
-      setDate(foundDateFormat);
+      setDate(foundDateFormat)
     }
-  };
+  }
 
   // Phone Prefix
-  const [phonePrefix, setPhonePrefix] = useState(null);
+  const [phonePrefix, setPhonePrefix] = useState(null)
   const handleChangePhonePrefix = (value: any) => {
-    setPhonePrefix(value);
-    setValue("phonePrefix", value.value, { shouldDirty: true });
-  };
+    setPhonePrefix(value)
+    setValue('phonePrefix', value.value, { shouldDirty: true })
+  }
   const setUserPhonePrefix = (value: any) => {
     const foundPhonePrefix: any = optionsPhonePrefix.find((obj) => {
-      return obj.value === value;
-    });
+      return obj.value === value
+    })
     if (foundPhonePrefix !== undefined) {
-      setPhonePrefix(foundPhonePrefix);
+      setPhonePrefix(foundPhonePrefix)
     }
-  };
+  }
 
   // Default Homepage
-  const [defaultHomepage, setDefaultHomepage] = useState(null);
+  const [defaultHomepage, setDefaultHomepage] = useState(null)
   const handleChangeDefaultHomepage = (value: any) => {
-    setDefaultHomepage(value);
-    setValue("defaultHomepage", value.value, { shouldDirty: true });
-  };
+    setDefaultHomepage(value)
+    setValue('defaultHomepage', value.value, { shouldDirty: true })
+  }
   const setUserDefaultHomepage = (value: any) => {
     const found: any = optionsDefaultHomepage.find((obj) => {
-      return obj.value === value;
-    });
+      return obj.value === value
+    })
     if (found !== undefined) {
-      setDefaultHomepage(found);
+      setDefaultHomepage(found)
     }
-  };
+  }
 
   //Set Data in the form
   useEffect(() => {
@@ -212,44 +203,49 @@ const Page: NextPageWithLayout = () => {
         userSettings.phone !== null ||
         userSettings.phonePrefix !== null)
     ) {
-      setUserLanguage(userSettings.language);
-      setUserDateFormat(userSettings.dateFormat);
-      setUserDefaultHomepage(userSettings.B2E[0].defaultHomepage);
-      setUserPhonePrefix(userSettings.phonePrefix);
+      setUserLanguage(userSettings.language)
+      setUserDateFormat(userSettings.dateFormat)
+      setUserDefaultHomepage(userSettings.B2E[0]?.defaultHomepage)
+      setUserPhonePrefix(userSettings.phonePrefix)
 
       reset({
         dateFormat: userSettings.dateFormat!,
-        defaultHomepage: userSettings.B2E[0].defaultHomepage!,
+        defaultHomepage: userSettings.B2E[0]?.defaultHomepage!,
         firstname: userSettings.firstname!,
         image: userSettings.image!,
         lastname: userSettings.lastname!,
         language: userSettings.language!,
         phone: userSettings.phone!,
         phonePrefix: userSettings.phonePrefix!,
-      });
-      return;
+      })
+      return
     }
-  }, [userSettings, reset]);
+  }, [userSettings, reset])
 
+  // function Update User settings
+  const { mutate: updateUserSettings, isLoading: isLoadingUpdateUserSettings } =
+    api.adminSettingsUserDefaultsUser.updateUserSettings.useMutation({
+      onSuccess(data) {
+        setSaving(false)
+        toast.success(`Changes Saved`, {
+          position: 'top-right',
+        })
+        refetchUserSettings()
+      },
+      onError(error) {
+        setSaving(false)
+        toast.error(error.message, {
+          position: 'top-right',
+        })
+      },
+    })
+  // Handle Form Submit -> use the updte user settings
   const saveSettings = handleSubmit(async (data) => {
-    setSaving(true);
-    console.log("data", data);
-    
-    const response = await fetch("/api/settings/user/user", {
-      method: HttpMethod.PUT,
-      body: JSON.stringify({
-        ...data,
-      }),
-    });
+    setSaving(true)
+    updateUserSettings(data)
+  })
 
-    if (response.ok) {
-      setSaving(false);
-      toast.success(`Changes Saved`);
-      mutate(`/api/settings/user/user?userId=${userId}`);
-    }
-  });
-
-  if (!userSettings) return <Loader />;
+  if (!userSettings) return <Loader />
 
   return (
     <>
@@ -290,9 +286,9 @@ const Page: NextPageWithLayout = () => {
                       className={`relative mt-5 w-20 border-2 border-gray-800 dark:border-gray-400 border-dashed rounded-md`}
                     >
                       <CloudinaryUploadWidget
-                        callback={(e) =>
-                          {console.log("e.secure_url", e.secure_url);
-                           setValue("image", e.secure_url, { shouldDirty: true });
+                        callback={(e) => {
+                          console.log('e.secure_url', e.secure_url)
+                          setValue('image', e.secure_url, { shouldDirty: true })
                         }}
                       >
                         {({ open }) => (
@@ -315,9 +311,12 @@ const Page: NextPageWithLayout = () => {
                         )}
                       </CloudinaryUploadWidget>
 
-                      
                       <BlurImage
-                        src={getValues("image") && getValues("image") !== "" ? getValues("image") : "/static/default-profile.jpg" }
+                        src={
+                          getValues('image') && getValues('image') !== ''
+                            ? getValues('image')
+                            : '/static/default-profile.jpg'
+                        }
                         alt="Cover Photo"
                         width={100}
                         height={100}
@@ -325,7 +324,6 @@ const Page: NextPageWithLayout = () => {
                         className="rounded-md"
                         objectFit="cover"
                       />
-                      
                     </div>
                   </div>
 
@@ -339,7 +337,7 @@ const Page: NextPageWithLayout = () => {
                       type="text"
                       placeholder="Ton incroyable prénom"
                       required={true}
-                      {...register("firstname")}
+                      {...register('firstname')}
                     />
                   </div>
 
@@ -353,7 +351,7 @@ const Page: NextPageWithLayout = () => {
                       type="text"
                       placeholder="Ton légendaire nom de famille"
                       required={true}
-                      {...register("lastname")}
+                      {...register('lastname')}
                     />
                   </div>
 
@@ -430,7 +428,7 @@ const Page: NextPageWithLayout = () => {
                           type="text"
                           placeholder="un 04 ?"
                           required={true}
-                          {...register("phone")}
+                          {...register('phone')}
                         />
                       </div>
                     </div>
@@ -476,12 +474,12 @@ const Page: NextPageWithLayout = () => {
                 <Button
                   disabled={saving}
                   onClick={() => {
-                    saveSettings();
+                    saveSettings()
                   }}
                   className={`${
                     saving
-                      ? "cursor-not-allowed bg-gray-300 border-gray-300"
-                      : "bg-black hover:bg-white hover:text-black border-black"
+                      ? 'cursor-not-allowed bg-gray-300 border-gray-300'
+                      : 'bg-black hover:bg-white hover:text-black border-black'
                   } mx-2 w-36 h-12 text-lg text-white border-2 focus:outline-none transition-all ease-in-out duration-150`}
                 >
                   {saving ? (
@@ -491,7 +489,7 @@ const Page: NextPageWithLayout = () => {
                       </div>
                     </>
                   ) : (
-                    "Enregistrer"
+                    'Enregistrer'
                   )}
                 </Button>
               </div>
@@ -506,22 +504,22 @@ const Page: NextPageWithLayout = () => {
         </Tabs.Group>
       </div>
     </>
-  );
-};
+  )
+}
 
 Page.getLayout = function getLayout(page: ReactElement) {
   return (
     <Layout>
       <SettingsNestedLayout>{page}</SettingsNestedLayout>
     </Layout>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page
 
 // Workaround to fetch router query
 export async function getServerSideProps() {
   return {
     props: {},
-  };
+  }
 }

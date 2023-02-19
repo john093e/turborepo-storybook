@@ -1,83 +1,76 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { useForm } from "react-hook-form";
-import { encrypt } from "@twol/utils/auth/crypto";
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { encrypt } from '@twol/utils/auth/crypto'
+import LoadingDots from '@components/common/loading-dots/LoadingDots'
+import AuthLayout from '@components/app/layout/AuthLayout'
+import { UilEye, UilEyeSlash } from '@iconscout/react-unicons'
+import { api, type RouterOutputs } from '@lib/utils/api'
 
-import LoadingDots from "@components/common/loading-dots/LoadingDots";
-import { HttpMethod } from "@types";
-
-import AuthLayout from "@components/app/layout/AuthLayout";
-
-import { UilEye, UilEyeSlash } from "@iconscout/react-unicons";
-
-const pageTitle = "Reset your password";
-const description = "Reset your T-WOL password.";
+const pageTitle = 'Reset your password'
+const description = 'Reset your T-WOL password.'
 
 type ResetFormValues = {
-  password: string;
-};
+  password: string
+}
 export default function ResetPassword() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [resetPasswordSuccess, setResetPasswordSuccess] = useState<
     string | null
-  >();
-  const [resetPasswordError, setResetPasswordError] = useState<string | null>();
+  >()
+  const [resetPasswordError, setResetPasswordError] = useState<string | null>()
 
-  const [showPass, setShowPass] = useState<boolean>(false);
+  const [showPass, setShowPass] = useState<boolean>(false)
 
-  const { query } = useRouter();
-  const token = query.token;
-  const email = query.email;
-  const router = useRouter();
+  const { query } = useRouter()
+  const token = query.token as string
+  const email = query.email as string
+  const router = useRouter()
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<ResetFormValues>();
+  } = useForm<ResetFormValues>()
+
+  // function validate user
+  const { mutate: resetPassword, isLoading } =
+    api.forgotPassword.resetPassword.useMutation({
+      onSuccess(data) {
+        setResetPasswordSuccess(
+          "C'est officiel ton mot de passe à été Pimpé 🔑"
+        )
+        setLoading(false)
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 4000)
+        setResetPasswordError('')
+      },
+      onError(error) {
+        setLoading(false)
+        setResetPasswordError('An error occured')
+        setResetPasswordSuccess(null)
+        toast.error(error.message, {
+          position: 'top-right',
+        })
+      },
+    })
 
   const onSubmit = handleSubmit(async (data) => {
     if (resetPasswordSuccess) {
-      return;
+      return
     }
-    try {
-      setLoading(true);
+    setLoading(true)
 
-      const hash = encrypt(data.password);
-
-      const response = await fetch("/api/forgot-password/", {
-        method: HttpMethod.POST,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: token,
-          email: email,
-          passwordIv: hash.iv,
-          passwordContent: hash.content,
-        }),
-      });
-      const dataresp = await response.json();
-      if (dataresp === "allGood") {
-        setResetPasswordSuccess(
-          "C'est officiel ton mot de passe à été Pimpé 🔑"
-        );
-        setLoading(false);
-        setTimeout(() => {
-          router.push("/auth/login");
-        }, 4000);
-        setResetPasswordError("");
-      } else {
-        setLoading(false);
-        setResetPasswordError("An error occured");
-        setResetPasswordSuccess(null);
-      }
-    } catch (error) {
-      setLoading(false);
-      setResetPasswordError("An error occured");
-      setResetPasswordSuccess(null);
-    }
-  });
+    const hash = encrypt(data.password)
+    resetPassword({
+      token: token,
+      email: email,
+      passwordIv: hash.iv,
+      passwordContent: hash.content,
+    })
+  })
 
   return (
     <AuthLayout pageTitle={pageTitle} pageDescription={description}>
@@ -104,8 +97,8 @@ export default function ResetPassword() {
               <div className="relative">
                 <input
                   id="password"
-                  type={!showPass ? "password" : "text"}
-                  {...register("password", {
+                  type={!showPass ? 'password' : 'text'}
+                  {...register('password', {
                     required: true,
                     pattern: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,25}$/,
                   })}
@@ -135,13 +128,14 @@ export default function ResetPassword() {
                   <button
                     disabled={loading || !isValid}
                     type="submit"
-                    className={`${loading || !isValid
-                      ? "cursor-not-allowed bg-gray-600"
-                      : "bg-black"
-                      } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
+                    className={`${
+                      loading || !isValid
+                        ? 'cursor-not-allowed bg-gray-600'
+                        : 'bg-black'
+                    } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
                   >
                     {!loading ? (
-                      "Reset"
+                      'Reset'
                     ) : (
                       <>
                         Processing <LoadingDots color="#fff" />
@@ -164,10 +158,8 @@ export default function ResetPassword() {
           </form>
         </>
       ) : (
-        <p>
-          The page you&apos;re trying to get to isn&apos;t available
-        </p>
+        <p>The page you&apos;re trying to get to isn&apos;t available</p>
       )}
     </AuthLayout>
-  );
+  )
 }

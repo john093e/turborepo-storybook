@@ -9,16 +9,14 @@ import { createAccountRouter } from './router/auth-user-account/create-account'
 // Admin - Settings
 // Admin - Settings - Account
 // Admin - Settings - Account - Defaults
-import { adminSettingsAccountDefaultsAccountDefaultsRouter } from './router/admin/settings/account/defaults/account-defaults'
-import { adminSettingsAccountDefaultsAccountNGODefaultsRouter } from './router/admin/settings/account/defaults/account-ngo-defaults'
+import { adminSettingsAccountDefaultsAccountDefaultsRouter } from './router/admin/'
 // Admin - Settings - Account - Users And Teams
-import { adminSettingsAccountUsersAndTeamsUsersRouter } from './router/admin/settings/account/users-and-teams/users'
-import { adminSettingsAccountUsersAndTeamsTeamsRouter } from './router/admin/settings/account/users-and-teams/teams'
-import { adminSettingsAccountUsersAndTeamsPermissionSetsRouter } from './router/admin/settings/account/users-and-teams/permission-sets'
-
+import { adminSettingsAccountUsersAndTeamsUsersRouter } from './router/admin/'
+import { adminSettingsAccountUsersAndTeamsTeamsRouter } from './router/admin/'
+import { adminSettingsAccountUsersAndTeamsPermissionSetsRouter } from './router/admin/'
 // Admin - Settings - User
 // Admin - Settings - User - Defaults
-import { adminSettingsUserDefaultsUserRouter } from './router/admin/settings/user/defaults/user'
+import { adminSettingsUserDefaultsUserRouter } from './router/admin/'
 
 import { userRouter } from './router/user'
 
@@ -33,8 +31,6 @@ export const appRouter = createTRPCRouter({
   // Admin - Settings - Account - Defaults
   adminSettingsAccountDefaultsAccountDefaults:
     adminSettingsAccountDefaultsAccountDefaultsRouter,
-  adminSettingsAccountDefaultsAccountNGODefaults:
-    adminSettingsAccountDefaultsAccountNGODefaultsRouter,
   // Admin - Settings - Account - Users And Teams
   adminSettingsAccountUsersAndTeamsUsers:
     adminSettingsAccountUsersAndTeamsUsersRouter,

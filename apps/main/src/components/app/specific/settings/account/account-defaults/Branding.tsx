@@ -25,9 +25,6 @@ export default function Branding({ userId }: PropFormBranding) {
   if (!userId) return <Loader />;
   return (
     <>
-      <h3 className="text-gray-800 dark:text-gray-400 text-xl font-medium my-4">
-        Branding
-      </h3>
       <p className="text-gray-800 dark:text-gray-400 text-sm my-4">
         Set your logo and colors for tools where you can show your branding.
         These settings will help you quickly choose brand options when creating

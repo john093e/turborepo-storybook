@@ -34,6 +34,10 @@ export const authRouter = createTRPCRouter({
    * - unknown
    *
    */
+  getMessage: publicProcedure.query(() => {
+    // testing type validation of overridden next-auth Session in @twol/auth package
+    return 'you can see this secret message!'
+  }),
   getSecretMessage: protectedProcedure.query(() => {
     // testing type validation of overridden next-auth Session in @twol/auth package
     return 'you can see this secret message!'
@@ -63,7 +67,7 @@ export const authRouter = createTRPCRouter({
         userPassContent: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.userEmail)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',

@@ -1,72 +1,62 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 
-import LoadingDots from "@components/common/loading-dots/LoadingDots";
+import LoadingDots from '@components/common/loading-dots/LoadingDots'
 
-import AuthLayout from "@components/app/layout/AuthLayout";
+import AuthLayout from '@components/app/layout/AuthLayout'
 
-import { HttpMethod } from "@types";
+import { api, type RouterOutputs } from '@lib/utils/api'
 
-const pageTitle = "Connexion";
-const description =
-  "Connecte toi à T-WOL pour gérer les dons et les donateurs.";
+const pageTitle = 'Connexion'
+const description = 'Connecte toi à T-WOL pour gérer les dons et les donateurs.'
 
 type ForgotFormValues = {
-  email: string;
-};
+  email: string
+}
 
 export default function ForgotPassword() {
-  const [loading, setLoading] = useState(false);
-  const [resetSuccess, setResetSuccess] = useState<string | null>();
-  const [resetError, setResetError] = useState<string | null>();
+  const [loading, setLoading] = useState(false)
+  const [resetSuccess, setResetSuccess] = useState<string | null>()
+  const [resetError, setResetError] = useState<string | null>()
+
+  // function validate user
+  const { mutate: requestReset, isLoading } =
+    api.forgotPassword.requestReset.useMutation({
+      onSuccess(data) {
+        if (data === "allGood") {
+          setLoading(false);
+          setResetError(null);
+          setResetSuccess(
+            "Si ton compte existe, tu trouveras un email avec ton lien magique pour modifier ton mot de passe."
+          );
+        } 
+      },
+      onError(error) {
+        setLoading(false);
+        setResetError("An error occured");
+        setResetSuccess(null);
+        toast.error(error.message, {
+          position: 'top-right',
+        })
+      },
+    })
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<ForgotFormValues>();
+  } = useForm<ForgotFormValues>()
 
   const onSubmit = handleSubmit(async (data) => {
     if (resetSuccess) {
       return
     }
-    try {
-      setLoading(true);
-      const response = await fetch("/api/forgot-password/request", {
-        method: HttpMethod.POST,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-        }),
-      });
-      const dataresp = await response.json();
-      if (dataresp === "allGood") {
-        setResetSuccess(
-          "Si ton compte existe, tu trouveras un email avec ton lien magique pour modifier ton mot de passe."
-        );
-        setLoading(false);
-        setResetError("");
-      } else if (dataresp === "wait5min") {
-        setResetSuccess(
-          "5min d'attente avant la prochaine demandes."
-        );
-        setLoading(false);
-        setResetError("");
-      } else {
-        setLoading(false);
-        setResetError("An error occured");
-        setResetSuccess(null);
-      }
-    } catch (error: any) {
-      setLoading(false);
-      setResetSuccess(
-        "Si ton compte existe, tu trouveras un email avec ton lien magique pour modifier ton mot de passe."
-      );
-      setResetError(null);
-    }
-  });
+    setLoading(true)
+    requestReset({
+      email: data.email,
+    })
+  })
 
   return (
     <AuthLayout pageTitle={pageTitle} pageDescription={description}>
@@ -93,7 +83,7 @@ export default function ForgotPassword() {
             id="email"
             type="email"
             autoComplete="email"
-            {...register("email", {
+            {...register('email', {
               required: true,
               pattern:
                 /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
@@ -112,13 +102,14 @@ export default function ForgotPassword() {
               <button
                 disabled={loading || !isValid}
                 type="submit"
-                className={`${loading || !isValid
-                  ? "cursor-not-allowed bg-gray-600"
-                  : "bg-black"
-                  } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
+                className={`${
+                  loading || !isValid
+                    ? 'cursor-not-allowed bg-gray-600'
+                    : 'bg-black'
+                } inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 dark:hover:bg-blue-700 dark:hover:text-white`}
               >
                 {!loading ? (
-                  "Get secure link"
+                  'Get secure link'
                 ) : (
                   <>
                     Sending <LoadingDots color="#fff" />
@@ -140,5 +131,5 @@ export default function ForgotPassword() {
         </div>
       </form>
     </AuthLayout>
-  );
+  )
 }
