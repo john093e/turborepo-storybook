@@ -1,8 +1,6 @@
 import { createContext, ReactNode, useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 
-import { HttpMethod } from '@types'
-
 import { api, type RouterOutputs } from '@lib/utils/api'
 
 interface PermissionSetsData {

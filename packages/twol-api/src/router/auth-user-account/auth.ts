@@ -277,7 +277,7 @@ export const authRouter = createTRPCRouter({
         userId: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.userId)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -520,6 +520,7 @@ export const authRouter = createTRPCRouter({
                   ongConnected: dataOngConnected,
                   role: dataUser.B2E[0].role,
                   permissionSet: dataUser.B2E[0].PermissionSets,
+                  userId: input.userId,
                 }
                 return available
               } else {
@@ -580,7 +581,7 @@ export const authRouter = createTRPCRouter({
         ongId: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (Array.isArray(input.ongId)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
