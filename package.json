@@ -1,5 +1,5 @@
 {
-  "name": "twol",
+  "name": "turbo-storybook",
   "repository": "https://github.com/vercel/examples.git",
   "license": "MIT",
   "private": true,
@@ -11,7 +11,7 @@
     "build": "turbo run build",
     "build:main": "turbo run build --filter=main...",
     "build:docs": "turbo run build --filter=docs...",
-    "clean": "turbo run clean && rm -rf node_modules",
+    "clean": "turbo run clean && rm -rf node_modules && rm -rf .turbo",
     "clean:workspaces": "turbo clean",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
@@ -33,7 +33,7 @@
     "@typescript-eslint/parser": "^5.47.1",
     "eslint": "^8.30.0",
     "prettier": "^2.8.1",
-    "turbo": "^1.8.1",
+    "turbo": "^1.8.6",
     "typescript": "^4.9.4"
   },
   "packageManager": "pnpm@7.15.0"

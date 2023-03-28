@@ -1,124 +1,30 @@
-// import type { AppProps } from 'next/app'
-// import type { LayoutProps } from '@vercel/examples-ui/layout'
-// import { getLayout } from '@vercel/examples-ui'
-// import '@vercel/examples-ui/globals.css'
-
-// export default function MyApp({ Component, pageProps }: AppProps) {
-//   const Layout = getLayout<LayoutProps>(Component)
-
-//   return (
-//     <Layout title="Microfrontends" path="solutions/microfrontends">
-//       <Component {...pageProps} />
-//     </Layout>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-// //src/pages/_app.tsx
-// import type { LayoutProps } from '@vercel/examples-ui/layout'
-// import { getLayout } from '@vercel/examples-ui'
-// // import '../styles/globals.css'
-// import '@vercel/examples-ui/globals.css'
-// import { SessionProvider } from 'next-auth/react'
-// import type { Session } from 'next-auth'
-// import type { AppType } from 'next/app'
-
-// import { api } from '../lib/utils/api'
-
-// const MyApp: AppType<{ session: Session | null }> = ({
-//   Component,
-//   pageProps: { session, ...pageProps },
-// }) => {
-//   const Layout = getLayout<LayoutProps>(Component)
-
-//   return (
-//     <SessionProvider session={session}>
-//       <Layout title="Microfrontends" path="solutions/microfrontends">
-//         <Component {...pageProps} />
-//       </Layout>
-//     </SessionProvider>
-//   )
-// }
-
-// export default api.withTRPC(MyApp)
-
-
-
-
-
-
 //src/pages/_app.tsx
+import type { ReactElement, ReactNode } from 'react'
+import type { AppProps } from 'next/app'
+import type { NextPage } from 'next'
 import PlausibleProvider from 'next-plausible'
-import { SessionProvider } from 'next-auth/react'
-import type { Session } from 'next-auth'
 import { Flowbite } from 'flowbite-react'
-import { AppLoggedInProvider } from '@contexts/AppLoggedInContext'
-
 import '@styles/globals.css'
 
-import type { AppProps, AppType } from 'next/app'
-import type { NextPage } from 'next'
-
-import type { ReactElement, ReactNode } from 'react'
-
-// import type { LayoutProps } from '@vercel/examples-ui/layout'
-// import { getLayout } from '@vercel/examples-ui'
-// import '@vercel/examples-ui/globals.css'
-import { api } from '@lib/utils/api'
-import { Analytics } from '@vercel/analytics/react';
-
-// export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
-//   getNestedLayout?: (page: ReactElement) => ReactNode
-// }
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
-  getLayout?: (page: ReactElement) => ReactNode;
-};
+  getLayout?: (page: ReactElement) => ReactNode
+}
 
-type AppPropsWithLayout = AppProps<{ session: Session }> & {
+type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
 const App = ({
   Component,
-  pageProps: { session, ...pageProps },
+  pageProps: { ...pageProps },
 }: AppPropsWithLayout) => {
-  // Use the layout defined at the page level, if available
-  // const Layout = getLayout<LayoutProps>(Component)
-
-  // const getNestedLayout = Component.getNestedLayout ?? ((page) => page)
-  const getLayout = Component.getLayout ?? ((page) => page);
+  const getLayout = Component.getLayout ?? ((page) => page)
 
   return (
-    <PlausibleProvider domain="t-wol.com">
-      <SessionProvider session={session}>
-        <AppLoggedInProvider>
-          <Flowbite>
-            {getLayout(<>
-                <Component {...pageProps} />
-                <Analytics />
-              </>)}
-            {/* {getNestedLayout(
-              // <Layout title="Microfrontends" path="solutions/microfrontends">
-              //   <Component {...pageProps} />
-              //   <Analytics />
-              // </Layout>
-              <>
-                <Component {...pageProps} />
-                <Analytics />
-              </>
-            )} */}
-          </Flowbite>
-        </AppLoggedInProvider>
-      </SessionProvider>
+    <PlausibleProvider domain="turbo-storybook.com">
+      <Flowbite>{getLayout(<Component {...pageProps} />)}</Flowbite>
     </PlausibleProvider>
   )
 }
 
-export default api.withTRPC(App)
+export default App

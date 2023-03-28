@@ -1,0 +1,91 @@
+{
+  "name": "@turbo-storybook/design-system",
+  "version": "0.0.1",
+  "repository": "https://github.com/vercel/examples.git",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm build:swc -w",
+    "build": "rm -rf dist && pnpm build:swc && pnpm types",
+    "build:swc": "pnpm copy-tailwind && swc src -d dist",
+    "copy-tailwind": "mkdir -p dist && cp src/tailwind.cjs dist/tailwind.cjs",
+    "types": "tsc --emitDeclarationOnly",
+    "lint": "TIMING=1 eslint \"**/*.{ts,tsx,js,jsx}\" --fix",
+    "clean": "rm -rf ./dist && rm -rf .turbo node_modules"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": [
+      "./dist/*.js",
+      "./dist/*/index.js",
+      "./dist/*/*.module.css",
+      "./dist/*.module.css",
+      "./dist/*/index.module.css",
+      "./index.css",
+      "./dist/index.css",
+      "./dist/*/index.css",
+      "./dist/*.css",
+      "./dist/*/*.css",
+      "./index.module.css",
+      "./dist/index.module.css",
+      "./dist/*/index.module.css",
+      "./dist/*.module.css",
+      "./dist/*/*.module.css"
+    ],
+    "./tailwind": {
+      "require": "./dist/tailwind.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/*",
+        "src/*/index"
+      ],
+      "tailwind": [
+        "dist/tailwind.d.cts"
+      ]
+    }
+  },
+  "publishConfig": {
+    "typesVersions": {
+      "*": {
+        "*": [
+          "dist/*.d.ts",
+          "dist/*/index.d.ts"
+        ],
+        "tailwind": [
+          "dist/tailwind.d.cts"
+        ]
+      }
+    }
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@swc/helpers": "^0.4.12",
+    "clsx": "^1.1.1",
+    "classnames": "^2.3.2"
+  },
+  "devDependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.3.10",
+    "@types/react": "latest",
+    "chokidar": "^3.5.3",
+    "eslint": "^8.26.0",
+    "eslint-config-turbo-storybook": "workspace:*",
+    "@storybook/addon-interactions": "^7.0.0-rc.8",
+    "@storybook/addon-links": "^7.0.0-rc.8",
+    "@storybook/blocks": "^7.0.0-rc.8",
+    "@storybook/react": "^7.0.0-rc.8",
+    "@storybook/testing-library": "^0.0.14-next.1",
+    "typescript": "^4.9.3"
+  }
+}

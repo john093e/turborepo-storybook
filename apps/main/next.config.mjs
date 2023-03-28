@@ -9,18 +9,10 @@ const { DOCS_URL } = process.env
 
 /** @type {import("next").NextConfig} */
 const config = {
-  images: {
-    domains: [
-      'res.cloudinary.com',
-      'abs.twimg.com',
-      'pbs.twimg.com',
-      'avatars.githubusercontent.com',
-    ],
-  },
   swcMinify: false, // Required to fix: https://nextjs.org/docs/messages/failed-loading-swc
   reactStrictMode: true,
   /** Enables hot reloading for local packages without a build step */
-  transpilePackages: ['@twol/api', '@twol/auth', '@twol/database'],
+  transpilePackages: ['@turbo-storybook/api', '@turbo-storybook/auth', '@turbo-storybook/database'],
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: !!process.env.CI },
   typescript: { ignoreBuildErrors: !!process.env.CI },
@@ -34,7 +26,7 @@ const config = {
         has: [
           {
             type: 'host',
-            value: '(app\.localhost|app\.t-wol\.com|app\.t-wol\.vercel\.app)',
+            value: '(app\.localhost|app\.turbo-storybook\.com|app\.turbo-storybook\.vercel\.app)',
           },
         ],
         destination: `${DOCS_URL}/docs`,
@@ -44,8 +36,7 @@ const config = {
         has: [
           {
             type: 'host',
-            // value: '(?<subdomain>.*)\\..*',
-            value: '(app\.localhost|app\.t-wol\.com|app\.t-wol\.vercel\.app)',
+            value: '(app\.localhost|app\.turbo-storybook\.com|app\.turbo-storybook\.vercel\.app)',
           },
         ],
         destination: `${DOCS_URL}/docs/:path*`,
@@ -55,38 +46,3 @@ const config = {
 }
 
 export default config
-// const { DOCS_URL } = process.env
-
-// module.exports = {
-//   async rewrites() {
-//     return [
-//       /**
-//        * Rewrites for Multi Zones
-//        */
-//       {
-//         source: '/docs',
-//         destination: `${DOCS_URL}/docs`,
-//       },
-//       {
-//         source: '/docs/:path*',
-//         destination: `${DOCS_URL}/docs/:path*`,
-//       },
-//     ]
-//   },
-// }
-
-// /**
-//  * @type {import('next').NextConfig}
-//  */
-// module.exports = {
-//   images: {
-//     domains: [
-//       "res.cloudinary.com",
-//       "abs.twimg.com",
-//       "pbs.twimg.com",
-//       "avatars.githubusercontent.com",
-//     ],
-//   },
-//   reactStrictMode: true,
-//   swcMinify: false, // Required to fix: https://nextjs.org/docs/messages/failed-loading-swc
-//};

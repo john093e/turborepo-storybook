@@ -1,5 +1,5 @@
 import { Layout, Page, Text, Code, Link } from '@vercel/examples-ui'
-import Navbar from '@twol/pages/components/navbar'
+import Navbar from '@turbo-storybook/pages/components/navbar'
 
 export default function About() {
   return (
