@@ -1,6 +1,5 @@
 ---
 name: Turbo Storybook - issue reproduction
-slug: microfrontends
 description: This is a reproduction of a personal project based on the [Microfrontends](https://github.com/vercel/examples/tree/main/solutions/microfrontends) template from Vercel
 framework: Next.js
 useCase: Monorepos
@@ -13,12 +12,12 @@ This is a reproduction of personal project based on the [Microfrontends](https:/
 
 1- To run it please dupliacte the content of this git
 ```bash
-git clone https://github.com/vercel/examples/tree/main/solutions/microfrontends
+git clone https://github.com/john093e/turborepo-storybook.git
 ```
 
 2- Enter the folder
 ```bash
-cd 
+cd turborepo-storybook
 ```
 
 3- Run the install of packages
