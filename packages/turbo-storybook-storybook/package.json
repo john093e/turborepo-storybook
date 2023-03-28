@@ -16,6 +16,7 @@
     "@turbo-storybook/pages": "workspace:*",
     "@vercel/examples-ui": "^1.0.4",
     "classnames": "^2.3.2",
+    "clsx": "^1.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
