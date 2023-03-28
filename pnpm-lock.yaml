@@ -220,6 +220,7 @@ importers:
       '@vitejs/plugin-react-swc': ^3.0.0
       autoprefixer: ^10.4.14
       classnames: ^2.3.2
+      clsx: ^1.1.1
       csstype: ^3.1.0
       eslint: ^8.26.0
       eslint-config-turbo-storybook: workspace:*
@@ -237,6 +238,7 @@ importers:
       '@turbo-storybook/pages': link:../turbo-storybook-pages
       '@vercel/examples-ui': 1.0.4_biqbaboplfbrettd7655fr4n2y
       classnames: 2.3.2
+      clsx: 1.2.1
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
