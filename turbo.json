@@ -16,8 +16,7 @@
     },
     "main#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**"],
-      "env": ["DOCS_URL"]
+      "outputs": [".next/**"]
     },
     "start": {
       "cache": false

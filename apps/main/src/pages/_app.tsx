@@ -3,7 +3,6 @@ import type { ReactElement, ReactNode } from 'react'
 import type { AppProps } from 'next/app'
 import type { NextPage } from 'next'
 import PlausibleProvider from 'next-plausible'
-import { Flowbite } from 'flowbite-react'
 import '@styles/globals.css'
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -22,7 +21,7 @@ const App = ({
 
   return (
     <PlausibleProvider domain="turbo-storybook.com">
-      <Flowbite>{getLayout(<Component {...pageProps} />)}</Flowbite>
+      {getLayout(<Component {...pageProps} />)}
     </PlausibleProvider>
   )
 }

@@ -18,27 +18,17 @@
     "@turbo-storybook/utils": "workspace:*",
     "@vercel/examples-ui": "^1.0.4",
     "clsx": "^1.2.1",
-    "cuid": "^2.1.8",
-    "date-fns": "^2.29.3",
-    "flowbite": "^1.6.0",
-    "flowbite-react": "^0.3.7",
     "next": "latest",
     "next-plausible": "^3.7.0",
     "react": "latest",
-    "react-dom": "latest",
-    "swr": "^2.0.0",
-    "unist-util-visit": "^4.1.1",
-    "zod": "^3.20.2"
-
+    "react-dom": "latest"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
-    "@tailwindcss/line-clamp": "^0.4.2",
     "@tailwindcss/typography": "^0.5.8",
     "@types/node": "^18.11.18",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.4.13",
     "dotenv-cli": "^6.0.0",
     "eslint": "^8.31.0",
